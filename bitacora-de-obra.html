@@ -56,6 +56,22 @@
     opacity:0;pointer-events:none;transition:opacity .2s}
   #toast.on{opacity:1}
   footer{color:var(--suave);font-size:.85rem;margin-top:28px}
+  .etiqueta{display:block;font-weight:600;font-size:.95rem;margin:4px 0 6px}
+  input[type=text]{width:100%;background:var(--tarjeta);color:var(--tinta);border:1px solid var(--borde);
+    border-radius:10px;padding:10px 12px;margin:0 0 12px;font:16px system-ui,sans-serif}
+  input[type=text]:focus{outline:2px solid var(--acento);outline-offset:1px}
+  #proy{position:fixed;inset:0;z-index:10;background:#14110d;color:#f3ecdc;display:flex;flex-direction:column}
+  #proy[hidden]{display:none}
+  .proy-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;
+    color:#b9ad98;font-size:1rem}
+  .proy-ctl{display:flex;gap:8px}
+  .proy-ctl button{background:transparent;color:#f3ecdc;border:1px solid #4a4237;border-radius:10px;
+    padding:8px 14px;font:inherit;cursor:pointer}
+  .proy-ctl button.on{background:#e0905a;color:#14110d;border-color:#e0905a}
+  #proy-texto{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;
+    padding:2vh 6vw;font-family:Georgia,"Times New Roman",serif;line-height:1.45;cursor:pointer;outline:none;
+    overflow:auto}
+  .proy-pie{text-align:center;color:#8d8272;font-size:.85rem;padding:8px 16px calc(12px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
@@ -87,23 +103,60 @@
       </ul>
     </details>
 
+    <label class="etiqueta" for="nombre">Nombre del bot</label>
+    <input id="nombre" type="text" maxlength="60" placeholder="Por ejemplo: Bitácora de obra" autocomplete="off">
+
     <textarea id="gram" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Gramática"></textarea>
     <div id="chips" aria-label="Símbolos definidos"></div>
     <div id="avisos"></div>
 
     <div class="fila">
-      <button class="sec" id="compartir">Compartir enlace</button>
       <button class="sec" id="copiar-g">Copiar gramática</button>
-      <button class="sec" id="json">Copiar JSON de Tracery</button>
-      <button class="sec" id="reset">Volver al ejemplo</button>
+      <button class="sec" id="json">Ver y copiar JSON de Tracery</button>
     </div>
     <pre id="json-out" hidden></pre>
+  </section>
+
+  <section>
+    <h2>Compartir este bot</h2>
+    <div class="fila">
+      <button class="sec" id="proyectar">Proyectar en pantalla</button>
+      <button class="sec" id="descargar">Descargar archivo JSON</button>
+      <button class="sec" id="compartir-f" hidden>Enviar archivo JSON</button>
+      <button class="sec" id="compartir">Compartir enlace</button>
+    </div>
+    <p class="pista">Para proyectar, conecta el equipo al proyector y toca el texto para pasar al siguiente. El archivo JSON se abre en cualquier copia de esta página con «Cargar un bot».</p>
+  </section>
+
+  <section>
+    <h2>Hacer el tuyo</h2>
+    <div class="fila">
+      <button class="sec" id="blanco">Empezar un bot en blanco</button>
+      <button class="sec" id="cargar">Cargar un bot (.json)</button>
+      <button class="sec" id="reset">Volver al ejemplo</button>
+    </div>
+    <input type="file" id="archivo" accept=".json,.txt,application/json,text/plain" hidden>
+    <p class="pista">Lo que escribes se guarda en el navegador de este teléfono. Para tener respaldo, descarga el archivo JSON.</p>
   </section>
 
   <footer>Funciona sin conexión una vez cargada. Compatible con el formato de <a href="https://tracery.io" style="color:inherit">Tracery</a>, de Kate Compton.</footer>
 </main>
 
 <div class="barra"><button id="gen">Generar</button></div>
+
+<div id="proy" hidden>
+  <div class="proy-top">
+    <span id="proy-titulo"></span>
+    <span class="proy-ctl">
+      <button type="button" id="proy-menos" aria-label="Letra más pequeña">A−</button>
+      <button type="button" id="proy-mas" aria-label="Letra más grande">A+</button>
+      <button type="button" id="proy-auto">Auto</button>
+      <button type="button" id="proy-cerrar" aria-label="Cerrar">✕</button>
+    </span>
+  </div>
+  <div id="proy-texto" role="button" tabindex="0" aria-live="polite"></div>
+  <div class="proy-pie">Toca el texto, o usa la barra espaciadora, para pasar al siguiente</div>
+</div>
 <div id="toast" role="status"></div>
 
 <script>
@@ -293,6 +346,44 @@ function toTracery(g){
   return out;
 }
 
+/* Convierte un JSON de Tracery (propio o ajeno) al formato de líneas de esta página.
+   Deshace los símbolos auxiliares que crea toTracery: rangos numéricos y minúscula inicial. */
+function fromTracery(obj){
+  var nombre = (obj._bot && obj._bot[0]) ? String(obj._bot[0]) : "";
+  var datos = {};
+  Object.keys(obj).forEach(function(k){
+    if (k === "_bot") return;
+    var v = obj[k];
+    if (typeof v === "string") v = [v];
+    if (Array.isArray(v)) datos[k] = v.map(function(s){ return String(s).replace(/\s*\r?\n\s*/g, " ").trim(); }).filter(Boolean);
+  });
+  function bajar(s){ return /^\p{Lu}/u.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+  var rangos = {}, minus = {};
+  Object.keys(datos).forEach(function(k){
+    var v = datos[k], m = k.match(/^n(\d+)a(\d+)$/), b = k.match(/^(.+)_minus$/);
+    if (m && v.length === (+m[2]) - (+m[1]) + 1 && v.every(function(x, i){ return x === String(+m[1] + i); }))
+      rangos[k] = "{" + m[1] + "-" + m[2] + "}";
+    else if (b && datos[b[1]] && datos[b[1]].map(bajar).join("\u0001") === v.join("\u0001"))
+      minus[k] = b[1];
+  });
+  function nom(k){ return k === "origin" ? "origen" : k.replace(/[^\p{L}\p{N}_]/gu, "_"); }
+  function conv(s){
+    return s.replace(/#([^#\s\[\]]+?)#/g, function(m, inner){
+      var partes = inner.split("."), n = partes[0], mods = partes.slice(1), extra = [];
+      if (rangos[n]) return rangos[n];
+      if (minus[n]){ n = minus[n]; extra.push("minus"); }
+      mods.forEach(function(x){ if (x === "capitalize") extra.push("mayus"); });
+      return "#" + nom(n) + extra.map(function(x){ return "." + x; }).join("") + "#";
+    });
+  }
+  var claves = Object.keys(datos).filter(function(k){ return !rangos[k] && !minus[k]; });
+  claves.sort(function(a, b){ return (a === "origin" ? -1 : 0) - (b === "origin" ? -1 : 0); });
+  var bloques = claves.map(function(k){
+    return nom(k) + ":\n" + datos[k].map(conv).join("\n");
+  });
+  return { texto: bloques.join("\n\n"), nombre: nombre, simbolos: claves.length };
+}
+
 function b64enc(t){
   var bytes = new TextEncoder().encode(t), s = "";
   bytes.forEach(function(x){ s += String.fromCharCode(x); });
@@ -307,15 +398,42 @@ function b64dec(s){
 }
 
 /* ===== Interfaz ===== */
+var BLANCO = [
+"// Mi bot. Cambia los nombres y escribe tus propias listas.",
+"// Cada bloque es un símbolo: un nombre con dos puntos y una opción por línea.",
+"// Deja una línea en blanco entre un símbolo y otro.",
+"",
+"origen:",
+"#quien# #hace# #donde#.",
+"",
+"quien:",
+"Una mujer",
+"Un ingeniero",
+"Un perro",
+"",
+"hace:",
+"cuenta las nubes",
+"vende relojes",
+"dibuja puentes",
+"",
+"donde:",
+"en la azotea",
+"a la orilla del río",
+"dentro de un elevador"
+].join("\n");
+
 if (typeof document !== "undefined") (function(){
   var $ = function(id){ return document.getElementById(id); };
-  var area = $("gram"), res = $("resultados"), chips = $("chips"), avisos = $("avisos");
-  var KEY = "bitacora-obra-gramatica";
-  var tToast, tInput, tReset;
+  var area = $("gram"), nombreIn = $("nombre"), res = $("resultados"), chips = $("chips"), avisos = $("avisos");
+  var KEY = "bitacora-obra-gramatica", KEYN = "bitacora-obra-nombre";
+  var tToast, tInput, tAuto = null, tam = 3.4;
 
   function toast(msg){
     var t = $("toast"); t.textContent = msg; t.classList.add("on");
-    clearTimeout(tToast); tToast = setTimeout(function(){ t.classList.remove("on"); }, 1600);
+    clearTimeout(tToast); tToast = setTimeout(function(){ t.classList.remove("on"); }, 1800);
+  }
+  function guardar(){
+    try { localStorage.setItem(KEY, area.value); localStorage.setItem(KEYN, nombreIn.value); } catch(e){}
   }
   function copiar(texto, msg){
     var fin = function(){ toast(msg || "Copiado"); };
@@ -330,8 +448,12 @@ if (typeof document !== "undefined") (function(){
     try { document.execCommand("copy"); } catch(e){}
     document.body.removeChild(ta);
   }
-
   function estado(){ return parseGrammar(area.value); }
+  function hayTrabajo(){
+    var t = area.value.trim();
+    return t && t !== EJEMPLO.trim() && t !== BLANCO.trim();
+  }
+  function confirmarReemplazo(msg){ return !hayTrabajo() || window.confirm(msg); }
 
   function pintarChips(p){
     var g = p.grammar; chips.innerHTML = "";
@@ -375,51 +497,151 @@ if (typeof document !== "undefined") (function(){
     if (!soloResultados){ pintarChips(p); pintarAvisos(p); }
     pintarResultados(p);
   }
+  function cargarTexto(texto, nombre){
+    area.value = texto; nombreIn.value = nombre || "";
+    guardar(); refrescar(false);
+  }
 
   area.addEventListener("input", function(){
-    try { localStorage.setItem(KEY, area.value); } catch(e){}
+    guardar();
     clearTimeout(tInput); tInput = setTimeout(function(){ refrescar(false); }, 350);
   });
+  nombreIn.addEventListener("input", guardar);
 
   $("gen").addEventListener("click", function(){
     refrescar(true);
     res.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
-  $("compartir").addEventListener("click", function(){
-    var url = location.href.split("#")[0] + "#g=" + b64enc(area.value);
-    if (navigator.share){
-      navigator.share({ title: "Bitácora de obra", url: url }).catch(function(){});
-    } else { copiar(url, "Enlace copiado"); }
-  });
-  $("copiar-g").addEventListener("click", function(){ copiar(area.value, "Gramática copiada"); });
-  $("json").addEventListener("click", function(){
+  /* ---- Exportar ---- */
+  function jsonActual(){
     var p = estado();
-    if (!startSymbol(p.grammar)){ toast("Falta el símbolo origen"); return; }
-    var txt = JSON.stringify(toTracery(p.grammar), null, 2);
+    if (!startSymbol(p.grammar)){ toast("Falta el símbolo origen"); return null; }
+    var o = toTracery(p.grammar), nombre = nombreIn.value.trim();
+    if (nombre){ var r = { _bot: [nombre] }; Object.keys(o).forEach(function(k){ r[k] = o[k]; }); o = r; }
+    return JSON.stringify(o, null, 2);
+  }
+  function nombreArchivo(){
+    var n = (nombreIn.value.trim() || "mi-bot").normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return (n || "mi-bot") + ".json";
+  }
+  $("json").addEventListener("click", function(){
+    var txt = jsonActual(); if (txt === null) return;
     var out = $("json-out"); out.textContent = txt; out.hidden = false;
     copiar(txt, "JSON copiado");
   });
+  $("descargar").addEventListener("click", function(){
+    var txt = jsonActual(); if (txt === null) return;
+    var blob = new Blob([txt], { type: "application/json" });
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = nombreArchivo();
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    toast("Archivo descargado");
+  });
+  var puedeArchivos = false;
+  try {
+    var prueba = new File(["{}"], "x.json", { type: "application/json" });
+    puedeArchivos = !!(navigator.canShare && navigator.canShare({ files: [prueba] }));
+  } catch(e){}
+  if (puedeArchivos) $("compartir-f").hidden = false;
+  $("compartir-f").addEventListener("click", function(){
+    var txt = jsonActual(); if (txt === null) return;
+    var f = new File([txt], nombreArchivo(), { type: "application/json" });
+    navigator.share({ files: [f], title: nombreIn.value.trim() || "Mi bot" }).catch(function(){});
+  });
+  $("compartir").addEventListener("click", function(){
+    var h = "#g=" + b64enc(area.value);
+    if (nombreIn.value.trim()) h += "&n=" + b64enc(nombreIn.value.trim());
+    var url = location.href.split("#")[0] + h;
+    if (navigator.share){
+      navigator.share({ title: nombreIn.value.trim() || "Bitácora de obra", url: url }).catch(function(){});
+    } else { copiar(url, "Enlace copiado"); }
+  });
+  $("copiar-g").addEventListener("click", function(){ copiar(area.value, "Gramática copiada"); });
+
+  /* ---- Crear el propio ---- */
+  $("blanco").addEventListener("click", function(){
+    if (!confirmarReemplazo("Esto reemplaza lo que tienes escrito. ¿Continuar?")) return;
+    cargarTexto(BLANCO, ""); nombreIn.focus(); toast("Bot en blanco listo");
+  });
   $("reset").addEventListener("click", function(){
-    var b = $("reset");
-    if (b.dataset.seguro){
-      clearTimeout(tReset); delete b.dataset.seguro; b.textContent = "Volver al ejemplo";
-      area.value = EJEMPLO;
-      try { localStorage.setItem(KEY, area.value); } catch(e){}
-      refrescar(false); toast("Ejemplo restaurado");
-    } else {
-      b.dataset.seguro = "1"; b.textContent = "¿Seguro? Toca otra vez";
-      tReset = setTimeout(function(){ delete b.dataset.seguro; b.textContent = "Volver al ejemplo"; }, 3000);
-    }
+    if (!confirmarReemplazo("Esto reemplaza lo que tienes escrito por el ejemplo. ¿Continuar?")) return;
+    cargarTexto(EJEMPLO, ""); toast("Ejemplo restaurado");
+  });
+  $("cargar").addEventListener("click", function(){ $("archivo").click(); });
+  $("archivo").addEventListener("change", function(ev){
+    var f = ev.target.files && ev.target.files[0]; if (!f) return;
+    var lector = new FileReader();
+    lector.onload = function(){
+      var txt = String(lector.result), nombre = "", texto = txt;
+      if (txt.trim().charAt(0) === "{"){
+        try {
+          var r = fromTracery(JSON.parse(txt));
+          if (!r.simbolos){ toast("El archivo no tiene símbolos"); return; }
+          texto = r.texto; nombre = r.nombre;
+        } catch(e){ toast("No se pudo leer el archivo"); return; }
+      }
+      if (!confirmarReemplazo("Esto reemplaza lo que tienes escrito. ¿Continuar?")) return;
+      cargarTexto(texto, nombre || f.name.replace(/\.[^.]+$/, ""));
+      toast("Bot cargado");
+    };
+    lector.readAsText(f);
+    ev.target.value = "";
   });
 
-  /* Carga inicial: enlace compartido > guardado local > ejemplo */
-  var inicial = EJEMPLO;
-  try { var gu = localStorage.getItem(KEY); if (gu) inicial = gu; } catch(e){}
-  if (location.hash.indexOf("#g=") === 0){
-    try { inicial = b64dec(location.hash.slice(3)); } catch(e){ toast("El enlace no se pudo leer"); }
+  /* ---- Proyección ---- */
+  var proy = $("proy"), ptxt = $("proy-texto");
+  function siguiente(){
+    var t = generate(estado().grammar, 1)[0];
+    ptxt.textContent = t || "…";
   }
-  area.value = inicial;
+  function tamano(){ ptxt.style.fontSize = "max(1.4rem," + tam + "vw)"; }
+  function pararAuto(){
+    if (tAuto){ clearInterval(tAuto); tAuto = null; }
+    $("proy-auto").classList.remove("on");
+  }
+  function abrirProy(){
+    if (!startSymbol(estado().grammar)){ toast("Falta el símbolo origen"); return; }
+    $("proy-titulo").textContent = nombreIn.value.trim();
+    proy.hidden = false; document.body.style.overflow = "hidden";
+    tamano(); siguiente(); ptxt.focus();
+    try { var r = proy.requestFullscreen && proy.requestFullscreen(); if (r && r.catch) r.catch(function(){}); } catch(e){}
+  }
+  function cerrarProy(){
+    pararAuto(); proy.hidden = true; document.body.style.overflow = "";
+    try { if (document.fullscreenElement){ var r = document.exitFullscreen(); if (r && r.catch) r.catch(function(){}); } } catch(e){}
+  }
+  $("proyectar").addEventListener("click", abrirProy);
+  $("proy-cerrar").addEventListener("click", cerrarProy);
+  ptxt.addEventListener("click", siguiente);
+  $("proy-mas").addEventListener("click", function(){ tam = Math.min(7, tam + 0.4); tamano(); });
+  $("proy-menos").addEventListener("click", function(){ tam = Math.max(1.6, tam - 0.4); tamano(); });
+  $("proy-auto").addEventListener("click", function(){
+    if (tAuto){ pararAuto(); return; }
+    tAuto = setInterval(siguiente, 9000); $("proy-auto").classList.add("on");
+  });
+  document.addEventListener("keydown", function(e){
+    if (proy.hidden) return;
+    if (e.key === "Escape") cerrarProy();
+    else if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight"){ e.preventDefault(); siguiente(); }
+  });
+
+  /* ---- Carga inicial: enlace compartido > guardado local > ejemplo ---- */
+  var inicial = EJEMPLO, nombreInicial = "Bitácora de obra";
+  try {
+    var gu = localStorage.getItem(KEY);
+    if (gu){ inicial = gu; nombreInicial = localStorage.getItem(KEYN) || ""; }
+  } catch(e){}
+  if (location.hash.indexOf("#g=") === 0){
+    try {
+      var partes = location.hash.slice(3).split("&n=");
+      inicial = b64dec(partes[0]);
+      nombreInicial = partes[1] ? b64dec(partes[1]) : "";
+    } catch(e){ toast("El enlace no se pudo leer"); }
+  }
+  area.value = inicial; nombreIn.value = nombreInicial;
   refrescar(false);
 })();
 </script>
