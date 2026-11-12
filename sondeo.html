@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sondeo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{--papel:#efe9dc; --tinta:#241f1a; --acento:#8a4b2a}
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--papel); color:var(--tinta); font-family:"Spectral",Georgia,serif}
+  main{max-width:820px; margin:0 auto; padding:26px 16px 50px}
+  .rotulo{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--acento)}
+  h1{font-size:40px; font-weight:500; margin:6px 0 10px}
+  .intro{font-size:18px; line-height:1.55; margin:0 0 18px; max-width:36em}
+  #terreno{position:relative; width:100%; height:72vh; min-height:440px; touch-action:none; cursor:crosshair; border:2px solid var(--tinta)}
+  #terreno canvas{position:absolute; inset:0; width:100%; height:100%}
+  .medidor{font-family:"IBM Plex Mono",monospace; font-size:13px; display:flex; flex-wrap:wrap; gap:6px; justify-content:space-between; margin:8px 0 22px}
+  .medidor b{color:var(--acento)}
+  .registro h2{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; border-bottom:1px solid var(--tinta); padding-bottom:6px; margin:0 0 10px}
+  .registro ol{list-style:none; padding:0; margin:0; font-family:"IBM Plex Mono",monospace; font-size:13px; line-height:1.5}
+  .registro li{display:flex; gap:12px; padding:6px 0; border-bottom:1px dashed rgba(36,31,26,.25); opacity:.25}
+  .registro li.visto{opacity:1}
+  .registro li i{width:22px; height:14px; flex:none; margin-top:3px; border:1px solid var(--tinta)}
+  .registro li span:last-child{margin-left:auto; color:var(--acento)}
+  .registro li.hallazgo span{margin-left:0; color:var(--tinta); font-family:"Spectral",Georgia,serif; font-size:16px}
+  .registro li.hallazgo{border-left:3px solid var(--acento); padding-left:10px}
+  #agua{pointer-events:none}
+  #reiniciar{font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.06em; padding:10px 14px; margin:0 0 22px;
+    background:var(--tinta); color:var(--papel); border:0; cursor:pointer}
+  #marea{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:30px; text-align:center;
+    color:#f2f7fa; font-size:24px; line-height:1.55; text-shadow:0 1px 8px rgba(0,0,0,.5); opacity:0; transition:opacity 3s; pointer-events:none}
+@media (max-width:520px){#marea{font-size:18px;padding:18px}h1{font-size:34px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="rotulo">Ingeniería geológica · Artefacto literario</div>
+  <h1>Sondeo</h1>
+  <p class="intro">Una calle de la Ciudad de México, vista desde arriba. Frota la superficie con el dedo o con el ratón para excavar: mientras más insistas en un mismo punto, más hondo llegas, y cada capa guarda su propia época. En algún lugar de la arcilla hay algo enterrado, y si cavas de más lo pierdes.</p>
+
+  <div id="terreno"><canvas id="lienzo"></canvas><div id="marea" style="z-index:3">El agua que la ciudad bombea desde aquí todos los días sube sola por el sondeo y en unos minutos cubre el asfalto, el cascajo y la acequia, como si el lago recordara dónde estaba.</div></div>
+  <div class="medidor"><span>Profundidad máxima alcanzada: <b id="prof">0 m</b></span><span>Capa: <b id="capa">Asfalto</b></span></div>
+  <button id="reiniciar">Tapar el sondeo y empezar de nuevo</button>
+
+  <section class="registro">
+    <h2>Registro estratigráfico del sondeo</h2>
+    <ol id="registro"></ol>
+  </section>
+</main>
+
+<script>
+const CAPAS = [
+  {n:"Asfalto", z:"0 m", fondo:"#3b3b3d", tinta:"#dedbd2",
+   t:"Los martes se estaciona aquí el camión de la basura, y nadie en la calle nota que el pavimento baja unos centímetros cada año."},
+  {n:"Relleno con cascajo", z:"0.5–3 m", fondo:"#8e7c6c", tinta:"#1c1915",
+   t:"Cascajo de los edificios caídos en el ochenta y cinco: varilla doblada, un azulejo azul, media taza, el picaporte de una puerta que daba a otra cocina."},
+  {n:"Relleno colonial", z:"3–8 m", fondo:"#6a5741", tinta:"#f2e7d3",
+   t:"Por aquí pasaba una acequia; las canoas traían flores y legumbres al mercado, y la ciudad echaba al agua lo que no quería ver."},
+  {n:"Arcilla lacustre", z:"8–30 m", fondo:"#7d8977", tinta:"#0f140e",
+   t:"Arcilla del lago, casi toda hecha de agua, que se encoge cuando le sacan el agua de abajo, y con ella se encoge la ciudad entera."},
+  {n:"Ceniza volcánica", z:"30 m", fondo:"#bdb9b0", tinta:"#262626",
+   t:"Una capa delgada de ceniza gris guarda el día en que un volcán cubrió el valle, mucho antes de que alguien le pusiera nombre."},
+  {n:"Acuífero", z:"60 m", fondo:"#2e4e62", tinta:"#e7f1f6",
+   t:"Aquí llega el pozo que da agua a la cuadra, y cada litro que sube desde este nivel hace que todo lo de arriba baje un poco."}
+];
+const PROF_M = [0, 3, 8, 30, 30.5, 60];
+
+const $t = document.getElementById("terreno"), cv = document.getElementById("lienzo"), ctx = cv.getContext("2d");
+let dpr, W, H, CEL, cols, filas, cantidad, profundidad, capasCv, maxCapa = 0;
+
+const $reg = document.getElementById("registro");
+CAPAS.forEach((c,i)=>{
+  const li = document.createElement("li"); li.id = "r"+i;
+  li.innerHTML = `<i style="background:${c.fondo}"></i><span>${c.n}</span><span>${c.z}</span>`;
+  $reg.appendChild(li);
+});
+
+function pintarCapa(c, i){
+  const k = document.createElement("canvas"); k.width = W; k.height = H;
+  const g = k.getContext("2d");
+  g.fillStyle = c.fondo; g.fillRect(0,0,W,H);
+  // textura del sedimento
+  const n = Math.floor(W*H/(90*dpr*dpr));
+  for (let j=0;j<n;j++){
+    g.fillStyle = Math.random()<.5 ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.08)";
+    const s = (Math.random()*2.4+0.6)*dpr;
+    g.fillRect(Math.random()*W, Math.random()*H, s, s);
+  }
+  // el texto de la capa recorre todo el estrato, renglón por renglón
+  const fs = 19*dpr, paso = 32*dpr;
+  g.font = `${fs}px Spectral, Georgia, serif`; g.fillStyle = c.tinta; g.textBaseline = "middle";
+  const linea = c.t + "   ·   ";
+  const ancho = g.measureText(linea).width;
+  let fila = 0;
+  for (let y = paso*0.7; y < H; y += paso, fila++){
+    if (fila % 6 === 3){
+      g.save(); g.font = `${11*dpr}px "IBM Plex Mono", monospace`; g.globalAlpha = .7;
+      let x = -((fila*97*dpr) % 300);
+      while (x < W){ g.fillText(`${c.n.toUpperCase()} · ${c.z}`, x, y); x += 260*dpr; }
+      g.restore(); continue;
+    }
+    let x = -((fila*173*dpr + i*61*dpr) % ancho);
+    while (x < W){ g.fillText(linea, x, y); x += ancho; }
+  }
+  if (i === 3) dibujarFosil(g);
+  return k;
+}
+
+// Restos de mamut escondidos en la arcilla lacustre
+let fosil;
+function dibujarFosil(g){
+  const w = 300*dpr, h = 170*dpr;
+  const x0 = (0.08 + Math.random()*0.5) * (W - w), y0 = (0.15 + Math.random()*0.55) * (H - h);
+  fosil = {x0, y0, w, h, visto:false, perdido:false};
+  g.save(); g.translate(x0, y0); g.scale(dpr, dpr);
+  g.strokeStyle = "#efe4c8"; g.fillStyle = "#efe4c8"; g.lineCap = "round";
+  g.shadowColor = "rgba(0,0,0,.45)"; g.shadowBlur = 4;
+  // colmillo
+  g.lineWidth = 13; g.beginPath(); g.moveTo(40,120); g.bezierCurveTo(10,60, 70,8, 150,22); g.stroke();
+  // cráneo
+  g.beginPath(); g.ellipse(52,128,30,22,-0.3,0,Math.PI*2); g.fill();
+  g.fillStyle = "#4d5947"; g.beginPath(); g.ellipse(48,124,8,6,0,0,Math.PI*2); g.fill(); g.fillStyle = "#efe4c8";
+  // costillas
+  g.lineWidth = 6;
+  for (let k=0; k<6; k++){ g.beginPath(); g.arc(150+k*20, 150, 34-k*2, Math.PI*1.05, Math.PI*1.65); g.stroke(); }
+  // columna
+  g.lineWidth = 8; g.beginPath(); g.moveTo(120,115); g.lineTo(275,108); g.stroke();
+  // fémur
+  g.lineWidth = 9; g.beginPath(); g.moveTo(205,158); g.lineTo(290,140); g.stroke();
+  [[205,158],[290,140]].forEach(([a,b])=>{ g.beginPath(); g.arc(a,b,8,0,Math.PI*2); g.fill(); });
+  g.restore();
+}
+
+function revisarFosil(){
+  if (!fosil || fosil.visto) return;
+  let total = 0, expuesto = 0;
+  const c0 = Math.floor(fosil.x0/CEL), c1 = Math.floor((fosil.x0+fosil.w)/CEL);
+  const f0 = Math.floor(fosil.y0/CEL), f1 = Math.floor((fosil.y0+fosil.h)/CEL);
+  for (let y=f0; y<=f1; y++) for (let x=c0; x<=c1; x++){ total++; if (profundidad[y*cols+x] === 3) expuesto++; }
+  if (expuesto/total > 0.3){
+    fosil.visto = true;
+    anotarHallazgo("Hallazgo en la arcilla lacustre: restos óseos de mamut. En la cuenca de México han aparecido huesos como estos en obras del drenaje, del metro y de aeropuertos, siempre bajo la ciudad que se construyó encima del lago.");
+  }
+}
+
+function anotarHallazgo(t){
+  const li = document.createElement("li"); li.className = "visto hallazgo";
+  li.innerHTML = `<span>${t}</span>`;
+  $reg.appendChild(li);
+}
+
+// El agua del acuífero sube por el sondeo
+const agua = document.createElement("canvas"); agua.id = "agua";
+let mojado, frente = [], inundando = false, expuestas = 0;
+function brotar(k){
+  if (mojado[k]) return;
+  mojado[k] = 1; frente.push(k);
+}
+function inundar(){
+  const g = agua.getContext("2d");
+  const nuevos = [];
+  const n = Math.min(frente.length, 220);
+  for (let j=0; j<n; j++){
+    const k = frente.splice(Math.floor(Math.random()*frente.length), 1)[0];
+    const x = k % cols, y = (k / cols) | 0;
+    g.fillStyle = `rgba(${40+Math.random()*20}, ${95+Math.random()*25}, ${130+Math.random()*30}, .78)`;
+    g.fillRect(x*CEL, y*CEL, CEL, CEL);
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
+      const nx = x+dx, ny = y+dy;
+      if (nx<0||ny<0||nx>=cols||ny>=filas) return;
+      const q = ny*cols+nx;
+      if (!mojado[q] && Math.random() < .75){ mojado[q] = 1; nuevos.push(q); } else if (!mojado[q]) frente.push(k);
+    });
+  }
+  frente.push(...nuevos);
+  if (!inundando) return;
+  if (frente.length) requestAnimationFrame(inundar);
+  else terminarInundacion();
+}
+function terminarInundacion(){
+  document.getElementById("marea").style.opacity = 1;
+}
+
+function montar(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = $t.getBoundingClientRect();
+  W = Math.round(r.width*dpr); H = Math.round(r.height*dpr);
+  cv.width = W; cv.height = H;
+  CEL = Math.round(5*dpr);
+  cols = Math.ceil(W/CEL); filas = Math.ceil(H/CEL);
+  cantidad = new Float32Array(cols*filas);
+  profundidad = new Uint8Array(cols*filas);
+  capasCv = CAPAS.map(pintarCapa);
+  ctx.drawImage(capasCv[0], 0, 0);
+  agua.width = W; agua.height = H; $t.appendChild(agua);
+  mojado = new Uint8Array(cols*filas);
+  maxCapa = 0; marcar(0);
+}
+
+function marcar(i){
+  document.getElementById("r"+i).classList.add("visto");
+  document.getElementById("prof").textContent = PROF_M[i] + " m";
+  document.getElementById("capa").textContent = CAPAS[i].n;
+}
+
+function excavar(px, py){
+  const R = 30*dpr, cx = Math.floor(px/CEL), cy = Math.floor(py/CEL), rc = Math.ceil(R/CEL);
+  for (let y = cy-rc; y <= cy+rc; y++){
+    if (y < 0 || y >= filas) continue;
+    for (let x = cx-rc; x <= cx+rc; x++){
+      if (x < 0 || x >= cols) continue;
+      const d = Math.hypot((x+.5)*CEL - px, (y+.5)*CEL - py);
+      if (d > R) continue;
+      const k = y*cols + x;
+      cantidad[k] += 0.09 * (1 - d/R) + 0.01;
+      // las capas profundas son más duras de excavar
+      let z = 0, umbral = 0;
+      for (let c = 1; c < CAPAS.length; c++){ umbral += 1 + c*0.35; if (cantidad[k] >= umbral) z = c; }
+      if (z !== profundidad[k]){
+        profundidad[k] = z;
+        const sx = x*CEL, sy = y*CEL;
+        ctx.drawImage(capasCv[z], sx, sy, CEL, CEL, sx, sy, CEL, CEL);
+        if (z > maxCapa){ maxCapa = z; marcar(z); }
+        if (z === CAPAS.length-1 && ++expuestas > 30 && !inundando){
+          inundando = true;
+          anotarHallazgo("El sondeo alcanzó el acuífero: el agua sube sola por el agujero.");
+          cv.style.pointerEvents = "none";
+          setTimeout(()=>{
+            for (let q=0; q<profundidad.length; q++) if (profundidad[q] === CAPAS.length-1) brotar(q);
+            inundar();
+          }, 600);
+        }
+      }
+    }
+  }
+}
+
+let cavando = false, ultimo = null;
+function punto(e){ const r = cv.getBoundingClientRect(); return [(e.clientX-r.left)*dpr, (e.clientY-r.top)*dpr]; }
+cv.addEventListener("pointerdown", e=>{ cavando = true; ultimo = punto(e); cv.setPointerCapture(e.pointerId); excavar(...ultimo); });
+cv.addEventListener("pointermove", e=>{
+  if (!cavando) return;
+  const p = punto(e);
+  // rellena el trazo entre dos lecturas del puntero
+  const pasos = Math.max(1, Math.ceil(Math.hypot(p[0]-ultimo[0], p[1]-ultimo[1]) / (8*dpr)));
+  for (let s=1; s<=pasos; s++) excavar(ultimo[0]+(p[0]-ultimo[0])*s/pasos, ultimo[1]+(p[1]-ultimo[1])*s/pasos);
+  ultimo = p;
+  revisarFosil();
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>cv.addEventListener(ev, ()=>{ cavando = false; }));
+
+function reiniciar(){
+  inundando = false; frente = []; expuestas = 0; fosil = null;
+  agua.getContext("2d").clearRect(0, 0, agua.width, agua.height);
+  document.getElementById("marea").style.opacity = 0;
+  cv.style.pointerEvents = "";
+  $reg.querySelectorAll(".hallazgo").forEach(e=>e.remove());
+  $reg.querySelectorAll("li").forEach(e=>e.classList.remove("visto"));
+  montar();
+}
+document.getElementById("reiniciar").addEventListener("click", reiniciar);
+
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(montar);
+
+// al girar el teléfono o cambiar el ancho, el terreno se vuelve a medir
+let rw;
+addEventListener("resize", ()=>{ clearTimeout(rw); rw = setTimeout(()=>{
+  if (Math.round($t.getBoundingClientRect().width * Math.min(window.devicePixelRatio || 1, 2)) !== W) reiniciar();
+}, 250); });
+</script>
+</body>
+</html>

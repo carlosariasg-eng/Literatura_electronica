@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lámpara</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{--x:50vw; --y:50vh; --r:220px}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:#1a1612; color:#eadfca; font-family:"Spectral",Georgia,serif; overflow-x:hidden;
+    background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px); background-size:14px 14px}
+  .oscuridad{position:fixed; inset:0; pointer-events:none; z-index:5;
+    background:radial-gradient(circle at var(--x) var(--y), rgba(0,0,0,0) 0, rgba(0,0,0,0) calc(var(--r) * .45), rgba(4,3,2,.992) var(--r))}
+  .nivel{position:relative; min-height:150vh; border-top:1px solid rgba(234,223,202,.25); overflow-x:clip}
+  .nivel .placa{position:absolute; top:40px; font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:#f0b43c}
+  .nivel .voz{position:absolute; width:min(500px, 84vw); font-size:22px; line-height:1.6}
+  .frag{position:absolute; font-family:"IBM Plex Mono",monospace; font-size:12px; opacity:.75; white-space:nowrap}
+  .rasgu{position:absolute; font-family:"Spectral",serif; font-style:italic; font-size:20px; color:#c4442e; white-space:nowrap; transform:rotate(-6deg)}
+  .portada{min-height:100vh; padding:40px 22px; max-width:620px; margin:0 auto; display:flex; flex-direction:column; justify-content:center; position:relative; z-index:6}
+  .rotulo{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#f0b43c}
+  h1{font-size:44px; font-weight:500; margin:8px 0 14px}
+  .portada p{font-size:18px; line-height:1.55; margin:0 0 10px}
+  .hud{position:fixed; left:0; right:0; bottom:0; z-index:7; display:flex; justify-content:center; gap:22px; padding:10px;
+    font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.08em; background:rgba(0,0,0,.6); color:#cfc6b4}
+  .hud b{color:#f0b43c}
+  #apagada{position:fixed; inset:0; z-index:8; display:flex; align-items:center; justify-content:center; padding:30px; text-align:center;
+    font-size:22px; line-height:1.6; color:#f6c768; text-shadow:0 0 14px rgba(246,199,104,.6); opacity:0; pointer-events:none; transition:opacity 3s}
+  #susto{position:fixed; inset:0; z-index:9; pointer-events:none; display:none; align-items:center; justify-content:center;
+    background:radial-gradient(circle at var(--x) var(--y), rgba(230,220,190,.55), rgba(20,8,4,.96) 55%)}
+  #susto svg{width:min(78vw, 520px); height:auto; transform:scale(.25); transition:transform .16s cubic-bezier(.2,1.6,.4,1)}
+  #susto.ya svg{transform:scale(1.15)}
+  .temblor{animation:temblor .45s linear}
+  @keyframes temblor{
+    0%,100%{transform:translate(0,0)} 15%{transform:translate(-14px,6px)} 30%{transform:translate(12px,-8px)}
+    45%{transform:translate(-9px,-5px)} 60%{transform:translate(8px,9px)} 75%{transform:translate(-5px,4px)}
+  }
+@media (max-width:520px){.nivel .voz{font-size:19px}.portada h1{font-size:36px}.frag{font-size:10.5px}}
+</style>
+</head>
+<body>
+<div class="oscuridad" id="osc"></div>
+
+<section class="portada">
+  <div class="rotulo">Ingeniería de minas · Artefacto literario de terror</div>
+  <h1>Lámpara</h1>
+  <p>Bajar por la página es bajar en la jaula hacia los niveles de la mina. Abajo no hay más luz que la de tu lámpara de casco, que sigue a tu dedo o a tu ratón.</p>
+  <p>La batería se gasta mientras estés bajo tierra y solo se recarga en la superficie. Los mineros dicen que en los niveles hondos hay alguien que no aparece en el plano, y que no le gusta que lo alumbren.</p>
+</section>
+
+<div id="mina"></div>
+
+<div class="hud"><span>PROFUNDIDAD <b id="prof">0</b> m</span><span>BATERÍA <b id="bat">100</b> %</span></div>
+<div id="apagada">Arriba, en el tablero de la lamparería, la ficha 117 sigue colgada, y alguien acaba de colgar junto a ella una ficha sin número.</div>
+
+<div id="susto">
+  <svg viewBox="0 0 220 300" aria-hidden="true">
+    <defs>
+      <filter id="brillo"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <!-- brazos largos que se acercan -->
+    <path d="M58 150 Q10 170 4 250 M162 150 Q210 170 216 250" stroke="#0d0a08" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <path d="M4 250 l-4 22 M4 250 l8 20 M4 250 l16 14 M216 250 l4 22 M216 250 l-8 20 M216 250 l-16 14" stroke="#0d0a08" stroke-width="5" stroke-linecap="round"/>
+    <!-- cuerpo cubierto de carbón -->
+    <path d="M60 140 Q110 118 160 140 L172 300 L48 300 Z" fill="#0d0a08"/>
+    <!-- cabeza y casco roto -->
+    <ellipse cx="110" cy="92" rx="52" ry="62" fill="#120e0b"/>
+    <path d="M56 70 Q110 18 164 70 L170 78 L50 78 Z" fill="#2b2620"/>
+    <circle cx="110" cy="52" r="11" fill="#3a352d" stroke="#6b6152" stroke-width="2"/>
+    <path d="M104 46 L116 58 M116 46 L104 58" stroke="#0d0a08" stroke-width="2"/>
+    <!-- ojos -->
+    <ellipse cx="88" cy="98" rx="13" ry="9" fill="#f4f1e2" filter="url(#brillo)"/>
+    <ellipse cx="132" cy="98" rx="13" ry="9" fill="#f4f1e2" filter="url(#brillo)"/>
+    <circle cx="90" cy="99" r="3.2" fill="#0d0a08"/><circle cx="130" cy="99" r="3.2" fill="#0d0a08"/>
+    <!-- boca abierta -->
+    <ellipse cx="110" cy="132" rx="22" ry="17" fill="#3a0c06"/>
+    <path d="M90 125 l5 8 l5 -8 l5 9 l5 -9 l5 9 l5 -9 l5 8 l5 -8" stroke="#e8e1cc" stroke-width="2.4" fill="none"/>
+  </svg>
+</div>
+
+<script>
+const NIVELES = [
+  {n:"Bocamina · 0 m",
+   v:"La jaula baja a las seis. Antes de entrar dejas tu ficha en el tablero y recoges la lámpara cargada, que alcanza para un turno si nada sale mal.",
+   f:["ficha 117","turno de 6 a 14","casco: talla 7","bajaron 12"], p:0},
+  {n:"Nivel 150 · 150 m",
+   v:"En el primer nivel todavía llega el aire que empujan los ventiladores de arriba, y aun así alguien jura que en la galería dos se oye una tos cuando todos están callados.",
+   f:["ventilación principal","→ galería 2","no contestes si te llaman por tu nombre"], p:1},
+  {n:"Nivel 300 · 300 m",
+   v:"Aquí el techo se sostiene con ademes de madera, y la madera cruje antes de ceder; los viejos dicen que hay que aprender a oírla, y a distinguirla de los pasos que no son de nadie del turno.",
+   f:["ademe reforzado","cuota: 4 carros","Virgen de la mina, con la cara rayada"], p:1},
+  {n:"Nivel 450 · 450 m",
+   v:"El manto de carbón llega a la altura del pecho, así que se trabaja de rodillas, y cuando la lámpara alumbra el fondo de la galería se ve otra lámpara apagada que nadie reclama.",
+   f:["frente 450-B","casco sin dueño","agua: 2 litros por turno"], p:2},
+  {n:"Nivel 600 · 600 m",
+   v:"En el nivel más hondo el metano no huele, por eso alguien carga un detector que pita, y cuando pita todos miran la lámpara de los demás para contar cuántas luces quedan.",
+   f:["metano: medir cada hora","salida de emergencia → 1 200 m","contamos 12, subimos 11"], p:2},
+  {n:"Fondo del plano",
+   v:"Aquí se termina el plano de la mina. Lo que sigue lo excavaron los que no volvieron a subir, y se oye desde aquí cómo siguen trabajando.",
+   f:[], p:3}
+];
+const MARCAS = ["no estaba en el plano","era del turno de antes","te vio la lámpara","ya sabe tu nombre","no subió con nosotros"];
+
+const $mina = document.getElementById("mina");
+const presencias = [];
+NIVELES.forEach((nv)=>{
+  const s = document.createElement("section"); s.className = "nivel";
+  const izq = Math.random()*55;
+  s.innerHTML = `<div class="placa" style="left:${8+Math.random()*50}vw">${nv.n}</div>
+    <p class="voz" style="left:min(${izq}vw, 12vw); top:${30+Math.random()*30}%">${nv.v}</p>`;
+  nv.f.forEach(t=>{
+    const e = document.createElement("span"); e.className = "frag"; e.textContent = t;
+    e.style.left = (4 + Math.random()*70) + "vw";
+    e.style.top = (12 + Math.random()*80) + "%";
+    e.style.transform = `rotate(${(Math.random()-.5)*8}deg)`;
+    s.appendChild(e);
+  });
+  $mina.appendChild(s);
+  for (let k=0; k<nv.p; k++) presencias.push({sec:s, fx:0.1+Math.random()*0.75, fy:0.1+Math.random()*0.8, hecha:false});
+});
+
+// en pantallas angostas, algunos fragmentos de texto quedan más anchos que el hueco a su derecha: se recorren hacia la izquierda
+function acomodarFrags(){
+  document.querySelectorAll(".frag").forEach(e=>{
+    const w = e.getBoundingClientRect().width, max = innerWidth - 10;
+    const left = e.getBoundingClientRect().left;
+    if (left + w > max) e.style.left = Math.max(4, max - w) + "px";
+  });
+}
+acomodarFrags();
+addEventListener("resize", acomodarFrags);
+
+const raiz = document.documentElement;
+let bateria = 100, muerta = false, px = innerWidth/2, py = innerHeight/2, enSusto = false, ultimoSusto = 0, audio;
+
+function mover(x, y){ px = x; py = y; raiz.style.setProperty("--x", x+"px"); raiz.style.setProperty("--y", y+"px"); }
+function despertarAudio(){ try{ if(!audio){ audio = new (window.AudioContext||window.webkitAudioContext)(); } if (audio.state==="suspended") audio.resume(); }catch(e){} }
+addEventListener("mousemove", e=>mover(e.clientX, e.clientY));
+addEventListener("pointerdown", despertarAudio);
+addEventListener("touchstart", e=>{ despertarAudio(); const t=e.touches[0]; mover(t.clientX, t.clientY); }, {passive:true});
+addEventListener("touchmove", e=>{ const t=e.touches[0]; mover(t.clientX, t.clientY); }, {passive:true});
+addEventListener("wheel", despertarAudio, {passive:true});
+
+function grito(){
+  if (!audio) return;
+  try{
+    const t = audio.currentTime;
+    const ruido = audio.createBuffer(1, audio.sampleRate*0.9, audio.sampleRate);
+    const d = ruido.getChannelData(0); for (let i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * (1 - i/d.length);
+    const fuente = audio.createBufferSource(); fuente.buffer = ruido;
+    const filtro = audio.createBiquadFilter(); filtro.type = "bandpass"; filtro.frequency.setValueAtTime(1800, t); filtro.frequency.exponentialRampToValueAtTime(300, t+0.8);
+    const g = audio.createGain(); g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.9);
+    fuente.connect(filtro).connect(g).connect(audio.destination); fuente.start(t);
+    const o = audio.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(70, t); o.frequency.linearRampToValueAtTime(42, t+0.9);
+    const g2 = audio.createGain(); g2.gain.setValueAtTime(0.5, t); g2.gain.exponentialRampToValueAtTime(0.01, t+1);
+    o.connect(g2).connect(audio.destination); o.start(t); o.stop(t+1);
+  }catch(e){}
+}
+
+function profundidad(){
+  const inicio = $mina.offsetTop - innerHeight*0.5;
+  const fin = document.documentElement.scrollHeight - innerHeight;
+  const f = Math.min(1, Math.max(0, (scrollY - inicio) / (fin - inicio)));
+  return {f, m: Math.round(f*640), bajo: scrollY > inicio};
+}
+
+function revisarPresencias(){
+  if (enSusto || muerta || performance.now() - ultimoSusto < 7000) return;
+  for (const pr of presencias){
+    if (pr.hecha) continue;
+    const r = pr.sec.getBoundingClientRect();
+    const x = r.left + pr.fx*r.width, y = r.top + pr.fy*r.height;
+    if (Math.hypot(px - x, py - y) < 75){ pr.hecha = true; asustar(pr, x - r.left, y - r.top); return; }
+  }
+}
+
+function asustar(pr, lx, ly){
+  enSusto = true;
+  raiz.style.setProperty("--r", "0px");                      // la lámpara se apaga un instante
+  setTimeout(()=>{
+    const s = document.getElementById("susto");
+    s.style.display = "flex"; grito();
+    requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add("ya")));
+    document.body.classList.add("temblor");
+    setTimeout(()=>{
+      s.classList.remove("ya"); s.style.display = "none"; document.body.classList.remove("temblor");
+      const m = document.createElement("span"); m.className = "rasgu";
+      m.textContent = MARCAS[Math.floor(Math.random()*MARCAS.length)];
+      m.style.left = Math.max(10, lx - 80) + "px"; m.style.top = ly + "px";
+      pr.sec.appendChild(m);
+      bateria = Math.max(1, bateria - 12);                    // el susto también gasta la lámpara
+      enSusto = false; ultimoSusto = performance.now();
+    }, 950);
+  }, 380 + Math.random()*500);
+}
+
+setInterval(()=>{
+  if (muerta) return;
+  const p = profundidad();
+  if (p.bajo) bateria = Math.max(0, bateria - 0.075);
+  else bateria = Math.min(100, bateria + 0.4);
+  document.getElementById("prof").textContent = p.m;
+  document.getElementById("bat").textContent = Math.ceil(bateria);
+  if (enSusto) return;
+  let r = 50 + 2.4*bateria;
+  if (bateria < 30 && Math.random() < 0.08) r *= 0.4;
+  if (p.f > 0.5 && Math.random() < 0.05) r *= 0.55;
+  if (!p.bajo) r = Math.max(innerWidth, innerHeight) * 1.5;
+  raiz.style.setProperty("--r", r+"px");
+  if (p.bajo) revisarPresencias();
+  if (bateria <= 0){
+    muerta = true;
+    raiz.style.setProperty("--r", "0px");
+    document.getElementById("osc").style.background = "rgba(4,3,2,1)";
+    setTimeout(()=>{ document.getElementById("apagada").style.opacity = 1; }, 2500);
+  }
+}, 100);
+</script>
+</body>
+</html>

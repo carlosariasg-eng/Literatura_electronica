@@ -1,0 +1,553 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Laboratorio Babel 95</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Rubik+Mono+One&family=Bodoni+Moda:ital,opsz,wght@1,6..96,400;1,6..96,500;1,6..96,700&display=swap">
+<style>
+/* Layout: escritorio de 1995 en clave vaporwave; arriba la ventana del poema, abajo la ventana del experimento (ecuación grande como panel de control + lienzo), barra de tareas fija para cambiar de sistema */
+*{box-sizing:border-box}
+:root{
+  --night:#0d0221; --violet:#24083f; --pink:#ff71ce; --cyan:#01cdfe; --mint:#05ffa1;
+  --lilac:#b967ff; --cream:#fffb96; --chrome:#dccbf7; --shade:#5b3d86; --ink:#1b0933; --dimtext:#9a82c9;
+  --term:"VT323","Courier New",monospace;
+  --block:"Rubik Mono One","Arial Black",Impact,sans-serif;
+  --serif:"Bodoni Moda","Didot","Bodoni 72","Times New Roman",serif;
+  color-scheme:dark;
+}
+html{background:var(--night)}
+body{background:linear-gradient(180deg,var(--violet) 0%,var(--night) 55%,#1a0433 100%) fixed;color:var(--chrome);font-family:var(--term);font-size:20px;line-height:1.25;overflow-x:hidden}
+body::after{content:"";position:fixed;left:-50%;right:-50%;bottom:-10vh;height:50vh;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,113,206,.32) 0 2px,transparent 2px 70px),repeating-linear-gradient(0deg,rgba(255,113,206,.32) 0 2px,transparent 2px 70px);
+  transform:perspective(320px) rotateX(62deg);transform-origin:50% 100%;
+  -webkit-mask-image:linear-gradient(to top,#000 20%,transparent 85%);mask-image:linear-gradient(to top,#000 20%,transparent 85%)}
+.desk{max-width:1000px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px calc(96px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:minmax(0,1fr);gap:26px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px}
+.big{font-size:clamp(2.3rem,8.5vw,4.4rem);line-height:.9;font-weight:900;margin:0;letter-spacing:.02em;
+  background:linear-gradient(180deg,var(--cream) 0%,var(--pink) 48%,var(--lilac) 52%,var(--cyan) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(3px 3px 0 rgba(1,205,254,.55))}
+.sub{font-size:1.3rem;color:var(--cyan)}
+.sub .jp{color:var(--pink);margin-left:.5em}
+
+.win{background:var(--chrome);color:var(--ink);border:2px solid;border-color:#fff var(--shade) var(--shade) #fff;box-shadow:8px 8px 0 rgba(1,205,254,.45);min-width:0}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 4px 3px 8px;background:linear-gradient(90deg,var(--pink),var(--lilac) 55%,var(--cyan));color:#fff;font-size:1.15rem;letter-spacing:.04em;text-shadow:1px 1px 0 var(--ink)}
+.bar .title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ctl{display:flex;gap:3px;flex:none}
+.ctl i{display:grid;place-items:center;width:20px;height:18px;background:var(--chrome);color:var(--ink);font-style:normal;font-size:.95rem;line-height:1;border:2px solid;border-color:#fff var(--shade) var(--shade) #fff;text-shadow:none}
+.body{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:10px}
+.tools{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+label.inl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;max-width:100%}
+.btn{font-family:var(--term);font-size:1.1rem;color:var(--ink);background:var(--chrome);border:2px solid;border-color:#fff var(--shade) var(--shade) #fff;padding:2px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:active,.btn[aria-pressed="true"]{border-color:var(--shade) #fff #fff var(--shade);background:#cbb7ef}
+.btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,.btn:focus-within,.param:focus-visible{outline:2px dotted var(--pink);outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+textarea,input[type=text],select{font-family:var(--term);font-size:1.1rem;color:var(--ink);background:#fff;border:2px solid;border-color:var(--shade) #fff #fff var(--shade);padding:4px 8px;min-width:0;box-sizing:border-box}
+textarea{width:100%;resize:vertical;line-height:1.15}
+.well{border:2px solid;border-color:var(--shade) #fff #fff var(--shade);background:var(--night);position:relative;min-width:0}
+canvas{display:block;width:100%}
+.status{display:flex;flex-wrap:wrap;gap:6px;font-size:1rem;color:var(--ink)}
+.status span{border:1px solid;border-color:var(--shade) #fff #fff var(--shade);padding:0 8px;font-variant-numeric:tabular-nums;min-width:0}
+.status .prec{flex:1 1 auto;color:var(--shade)}
+.msg{color:#b0006e;min-height:1.1em;font-size:1.05rem}
+
+/* la ecuación como panel */
+.eqpanel{background:var(--night);border:2px solid;border-color:var(--shade) #fff #fff var(--shade);padding:16px 18px 18px;display:grid;gap:10px;overflow-x:auto}
+.eq{font-family:var(--serif);font-style:italic;font-weight:500;font-size:clamp(1.25rem,4vw,2.1rem);color:var(--chrome);display:grid;gap:.35em;justify-items:start;font-variant-numeric:lining-nums}
+.eq .ln{display:flex;align-items:center;gap:.28em;white-space:nowrap}
+.frac{display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;font-size:.82em}
+.frac span:first-child{border-bottom:1.5px solid currentColor;padding:0 .15em}
+.op{font-style:normal;color:var(--lilac);font-family:var(--serif)}
+.v{color:var(--cyan)}
+.param{position:relative;display:inline-flex;flex-direction:column;align-items:center;color:var(--pink);cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;border-bottom:2px dotted var(--pink);padding:0 .08em;line-height:1}
+.param .pv{font-family:var(--term);font-style:normal;font-size:.5em;color:var(--cream);margin-top:.15em;font-variant-numeric:tabular-nums}
+.param:hover{color:var(--cream)}
+.live{font-family:var(--term);font-style:normal;font-size:.55em;color:var(--mint);margin-left:.4em}
+.eqnote{font-family:var(--term);font-size:1.05rem;color:var(--dimtext)}
+.custom{display:grid;gap:6px}
+.custom label{display:flex;align-items:center;gap:6px;color:var(--chrome);font-family:var(--serif);font-style:italic;font-size:1.25rem}
+.custom input{flex:1 1 auto}
+.reading{font-family:var(--serif);font-style:italic;font-size:1.15rem;color:var(--chrome);padding:12px 14px;min-height:2.6em;word-break:break-all;line-height:1.35}
+.reading b{font-family:var(--term);font-style:normal;font-weight:400;color:var(--cyan);margin-right:.5em;font-size:1.05rem}
+
+.taskbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--chrome);border-top:2px solid #fff;display:flex;gap:6px;align-items:center;
+  padding:5px max(8px,env(safe-area-inset-right,0px)) calc(5px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));overflow-x:auto}
+.start{font-family:var(--block);font-size:.8rem;background:linear-gradient(90deg,var(--pink),var(--cyan));color:#fff;text-shadow:1px 1px 0 var(--ink)}
+.taskbar .btn{flex:none}
+.clock{margin-left:auto;flex:none;border:1px solid;border-color:var(--shade) #fff #fff var(--shade);padding:2px 10px;color:var(--ink)}
+@media (max-width:560px){.start,.clock{display:none}}
+select{max-width:100%}
+@media (max-width:560px){.eq{font-size:1.15rem}.custom label{font-size:1.05rem}}
+</style>
+
+<div class="desk">
+  <header>
+    <h1 class="big" aria-label="Babel 95">ＢＡＢＥＬ ９５</h1>
+    <div class="sub">laboratorio: el poema como materia <span class="jp" aria-hidden="true">詩の物理学</span></div>
+  </header>
+
+  <section class="win" aria-labelledby="t-poem">
+    <div class="bar"><span class="title" id="t-poem">POEMA.TXT</span><span class="ctl" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span></div>
+    <div class="body">
+      <textarea id="poem" rows="4" aria-label="Poema">Dichoso el árbol, que es apenas sensitivo,
+y más la piedra dura porque esa ya no siente,
+pues no hay dolor más grande que el dolor de ser vivo,
+ni mayor pesadumbre que la vida consciente.</textarea>
+      <div class="tools">
+        <label class="btn">Abrir .txt<input type="file" id="poem-file" accept=".txt,text/plain" class="vh"></label>
+        <button class="btn" id="poem-apply">Usar este poema</button>
+        <span style="color:var(--shade)">Rubén Darío, «Lo fatal», 1905</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATRACTOR -->
+  <section class="win" id="atractor" aria-labelledby="t-at">
+    <div class="bar"><span class="title" id="t-at">ATRACTOR.EXE</span><span class="ctl" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span></div>
+    <div class="body">
+      <div class="tools">
+        <label class="inl">Sistema
+          <select id="at-sys"><option value="lorenz">Lorenz, 1963</option><option value="rossler">Rössler, 1976</option><option value="thomas">Thomas, 1999</option><option value="propio">Escribe tu sistema</option></select></label>
+        <label class="inl">Separación inicial ε
+          <select id="at-eps"><option value="0">0 (el verso sigue la órbita)</option><option value="1e-9">10⁻⁹</option><option value="1e-6" selected>10⁻⁶</option><option value="1e-3">10⁻³</option><option value="0.1">10⁻¹</option></select></label>
+      </div>
+      <div class="eqpanel"><div class="eq" id="at-eq"></div><div class="custom" id="at-custom" hidden>
+        <label>dx/dt = <input type="text" id="cx" value="-a*x - 4*y - 4*z - y*y"></label>
+        <label>dy/dt = <input type="text" id="cy" value="-a*y - 4*z - 4*x - z*z"></label>
+        <label>dz/dt = <input type="text" id="cz" value="-a*z - 4*x - 4*y - x*x"></label>
+        <div class="tools"><button class="btn" id="cgo">Integrar</button><span class="eqnote">usa x, y, z y los parámetros a, b, c</span></div>
+      </div><div class="eqnote">Arrastra los parámetros en rosa para cambiarlos. Arrastra el lienzo para girar.</div></div>
+      <div class="tools">
+        <button class="btn" id="at-play">Pausa</button>
+        <button class="btn" id="at-reset">Reiniciar</button>
+        <label class="inl">Velocidad <input type="range" id="at-speed" min="1" max="12" value="4" style="accent-color:var(--pink);width:110px"></label>
+      </div>
+      <div class="msg" id="at-msg" role="status"></div>
+      <div class="well" id="at-well"><canvas id="at-cv" aria-label="Atractor con letras"></canvas></div>
+      <div class="well"><div class="reading" id="at-read"></div></div>
+      <div class="status"><span id="at-t">t = 0</span><span class="prec">Edward Lorenz, «Deterministic Nonperiodic Flow», 1963</span></div>
+    </div>
+  </section>
+
+  <!-- ENTROPÍA -->
+  <section class="win" id="entropia" aria-labelledby="t-en" hidden>
+    <div class="bar"><span class="title" id="t-en">ENTROPIA.EXE</span><span class="ctl" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span></div>
+    <div class="body">
+      <div class="eqpanel"><div class="eq" id="en-eq"></div></div>
+      <div class="tools">
+        <button class="btn" id="en-go">Liberar el poema</button>
+        <button class="btn" id="en-wall">Quitar la pared</button>
+        <button class="btn" id="en-rev">Invertir el tiempo</button>
+        <button class="btn" id="en-reset">Reiniciar</button>
+      </div>
+      <div class="well" id="en-well"><canvas id="en-cv" aria-label="El poema como gas"></canvas></div>
+      <div class="status"><span id="en-t">t = 0</span><span id="en-state">en reposo</span><span class="prec">Boltzmann, 1877 · paradoja de Loschmidt, 1876</span></div>
+    </div>
+  </section>
+
+  <!-- CALOR -->
+  <section class="win" id="calor" aria-labelledby="t-ca" hidden>
+    <div class="bar"><span class="title" id="t-ca">CALOR.EXE</span><span class="ctl" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span></div>
+    <div class="body">
+      <div class="eqpanel"><div class="eq" id="ca-eq"></div><div class="eqnote">Esta ecuación no se puede correr hacia atrás: el calor no vuelve a juntarse en letras. Escribe con el dedo para darle calor nuevo.</div></div>
+      <div class="tools">
+        <button class="btn" id="ca-play">Pausa</button>
+        <button class="btn" id="ca-reset">Reiniciar</button>
+      </div>
+      <div class="well" id="ca-well"><canvas id="ca-cv" aria-label="El poema como calor que se difunde"></canvas></div>
+      <div class="status"><span id="ca-t">t = 0</span><span class="prec">Joseph Fourier, Théorie analytique de la chaleur, 1822</span></div>
+    </div>
+  </section>
+</div>
+
+<nav class="taskbar" aria-label="Sistemas">
+  <span class="btn start" aria-hidden="true">Inicio</span>
+  <button class="btn" data-mod="atractor" aria-pressed="true">Atractor</button>
+  <button class="btn" data-mod="entropia" aria-pressed="false">Entropía</button>
+  <button class="btn" data-mod="calor" aria-pressed="false">Calor</button>
+  <span class="clock" id="clock"></span>
+</nav>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const fmt = (n, d = 0) => Number(n).toLocaleString("es-MX", {minimumFractionDigits: d, maximumFractionDigits: d});
+const grad = t => `rgb(${Math.round(255 - 254*t)},${Math.round(113 + 92*t)},${Math.round(206 + 48*t)})`;
+const MATHARGS = "const {sin,cos,tan,asin,acos,atan,atan2,sinh,cosh,tanh,abs,sqrt,cbrt,exp,log,pow,floor,ceil,round,min,max,sign,PI,E}=Math; const pi=PI;";
+function sizeCanvas(cv, well, ratio, minH, maxH){
+  const W = well.clientWidth - 4, H = Math.round(Math.min(Math.max(W*ratio, minH), maxH)), dpr = window.devicePixelRatio || 1;
+  cv.style.height = H + "px"; cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+  const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return {ctx, W, H};
+}
+function poemLines(){ return $("poem").value.split("\n").map(l => l.replace(/\s+/g, " ").trim()).filter(Boolean); }
+function poemFlat(){ return poemLines().join(" / "); }
+
+/* ---------- parámetros que se arrastran dentro de la ecuación ---------- */
+function param(key, sym, val, min, max, step, onChange){
+  const el = document.createElement("span");
+  el.className = "param"; el.tabIndex = 0; el.setAttribute("role", "slider");
+  el.setAttribute("aria-label", sym); el.setAttribute("aria-valuemin", min); el.setAttribute("aria-valuemax", max);
+  const dec = step >= 1 ? 0 : step >= .1 ? 1 : step >= .01 ? 2 : 3;
+  el.innerHTML = `<span>${sym}</span><span class="pv"></span>`;
+  let v = val;
+  const set = nv => { v = Math.min(max, Math.max(min, Math.round(nv/step)*step)); el.querySelector(".pv").textContent = fmt(v, dec); el.setAttribute("aria-valuenow", v); onChange(key, v); };
+  let sx = null, sv = 0;
+  el.addEventListener("pointerdown", e => { sx = e.clientX; sv = v; el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener("pointermove", e => { if (sx === null) return; set(sv + (e.clientX - sx)/240*(max - min)); });
+  const up = () => { sx = null; }; el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+  el.addEventListener("keydown", e => { if (e.key === "ArrowRight" || e.key === "ArrowUp") { set(v + step); e.preventDefault(); } if (e.key === "ArrowLeft" || e.key === "ArrowDown") { set(v - step); e.preventDefault(); } });
+  el.querySelector(".pv").textContent = fmt(v, dec);
+  return el;
+}
+/* compone una ecuación a partir de piezas: texto, ['p', clave] o nodos */
+function line(parts){
+  const d = document.createElement("div"); d.className = "ln";
+  parts.forEach(p => { if (typeof p === "string") { const s = document.createElement("span"); s.innerHTML = p; d.appendChild(s); } else d.appendChild(p); });
+  return d;
+}
+const FR = (a, b) => `<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+
+/* ---------- navegación ---------- */
+const MODS = ["atractor","entropia","calor"]; let active = "atractor";
+function openMod(m){
+  if (!MODS.includes(m)) m = "atractor"; active = m;
+  MODS.forEach(x => $(x).hidden = x !== m);
+  document.querySelectorAll(".taskbar [data-mod]").forEach(b => b.setAttribute("aria-pressed", b.dataset.mod === m));
+  try { history.replaceState(null, "", "#" + m); } catch(e) {}
+  if (m === "atractor") AT.resize(); if (m === "entropia") EN.resize(); if (m === "calor") CA.resize();
+}
+document.querySelector(".taskbar").addEventListener("click", e => { const b = e.target.closest("[data-mod]"); if (b) openMod(b.dataset.mod); });
+function tick(){ $("clock").textContent = new Date().toLocaleTimeString("es-MX", {hour:"2-digit", minute:"2-digit"}); } tick(); setInterval(tick, 20000);
+
+/* =========================================================
+   ATRACTOR
+   ========================================================= */
+const AT = (() => {
+  const SYS = {
+    lorenz: {p: {sigma: [10, 0, 30, .1], rho: [28, 0, 60, .1], beta: [8/3, .1, 10, .01]}, start: [1, 1, 20], dt: .005,
+      f: (x, y, z, p) => [p.sigma*(y - x), x*(p.rho - z) - y, x*y - p.beta*z],
+      eq: P => [line([FR('d<span class="v">x</span>','d<span class="v">t</span>'), '<span class="op">=</span>', P("sigma","σ"), '(<span class="v">y</span> <span class="op">−</span> <span class="v">x</span>)']),
+               line([FR('d<span class="v">y</span>','d<span class="v">t</span>'), '<span class="op">=</span>', '<span class="v">x</span>(', P("rho","ρ"), '<span class="op">−</span> <span class="v">z</span>) <span class="op">−</span> <span class="v">y</span>']),
+               line([FR('d<span class="v">z</span>','d<span class="v">t</span>'), '<span class="op">=</span>', '<span class="v">xy</span> <span class="op">−</span>', P("beta","β"), '<span class="v">z</span>'])]},
+    rossler: {p: {a: [.2, 0, .5, .01], b: [.2, 0, 2, .01], c: [5.7, 1, 14, .1]}, start: [1, 1, 0], dt: .02,
+      f: (x, y, z, p) => [-y - z, x + p.a*y, p.b + z*(x - p.c)],
+      eq: P => [line([FR('d<span class="v">x</span>','d<span class="v">t</span>'), '<span class="op">=</span> <span class="op">−</span><span class="v">y</span> <span class="op">−</span> <span class="v">z</span>']),
+               line([FR('d<span class="v">y</span>','d<span class="v">t</span>'), '<span class="op">=</span> <span class="v">x</span> <span class="op">+</span>', P("a","a"), '<span class="v">y</span>']),
+               line([FR('d<span class="v">z</span>','d<span class="v">t</span>'), '<span class="op">=</span>', P("b","b"), '<span class="op">+</span> <span class="v">z</span>(<span class="v">x</span> <span class="op">−</span>', P("c","c"), ')'])]},
+    thomas: {p: {b: [.208, .05, .35, .001]}, start: [.1, 0, 0], dt: .05,
+      f: (x, y, z, p) => [Math.sin(y) - p.b*x, Math.sin(z) - p.b*y, Math.sin(x) - p.b*z],
+      eq: P => [line([FR('d<span class="v">x</span>','d<span class="v">t</span>'), '<span class="op">=</span> sen <span class="v">y</span> <span class="op">−</span>', P("b","b"), '<span class="v">x</span>']),
+               line([FR('d<span class="v">y</span>','d<span class="v">t</span>'), '<span class="op">=</span> sen <span class="v">z</span> <span class="op">−</span>', P("b","b"), '<span class="v">y</span>']),
+               line([FR('d<span class="v">z</span>','d<span class="v">t</span>'), '<span class="op">=</span> sen <span class="v">x</span> <span class="op">−</span>', P("b","b"), '<span class="v">z</span>'])]},
+    propio: {p: {a: [1.89, 0, 5, .01], b: [0, -5, 5, .01], c: [0, -5, 5, .01]}, start: [-1.48, -1.51, 2.04], dt: .004, f: null,
+      eq: P => [line(['parámetros', P("a","a"), P("b","b"), P("c","c")])]}
+  };
+  const cv = $("at-cv"), well = $("at-well");
+  let ctx, W = 600, H = 450, sys = "lorenz", S, pv = {}, n = 0, X, chars = [], orbit = [], center = [0, 0, 0], radius = 1;
+  let yaw = .6, pitch = .32, playing = !reduced, t = 0, dragging = null, lastRead = 0;
+  function compileCustom(){
+    try {
+      const f = new Function("x", "y", "z", "a", "b", "c", `${MATHARGS} return [${$("cx").value}, ${$("cy").value}, ${$("cz").value}];`);
+      const test = f(.1, .2, .3, 1, 1, 1); if (!test.every(Number.isFinite)) throw new Error("devuelve valores no numéricos");
+      SYS.propio.f = (x, y, z, p) => f(x, y, z, p.a, p.b, p.c); $("at-msg").textContent = ""; return true;
+    } catch (err) { $("at-msg").textContent = "Revisa el sistema: " + err.message; return false; }
+  }
+  function rk4(s, dt){
+    const f = S.f, p = pv;
+    const k1 = f(s[0], s[1], s[2], p);
+    const k2 = f(s[0]+k1[0]*dt/2, s[1]+k1[1]*dt/2, s[2]+k1[2]*dt/2, p);
+    const k3 = f(s[0]+k2[0]*dt/2, s[1]+k2[1]*dt/2, s[2]+k2[2]*dt/2, p);
+    const k4 = f(s[0]+k3[0]*dt, s[1]+k3[1]*dt, s[2]+k3[2]*dt, p);
+    s[0] += dt*(k1[0]+2*k2[0]+2*k3[0]+k4[0])/6; s[1] += dt*(k1[1]+2*k2[1]+2*k3[1]+k4[1])/6; s[2] += dt*(k1[2]+2*k2[2]+2*k3[2]+k4[2])/6;
+  }
+  function renderEq(){
+    const box = $("at-eq"); box.innerHTML = "";
+    const P = (k, sym) => { const d = S.p[k]; return param(k, sym, pv[k], d[1], d[2], d[3], (key, v) => { pv[key] = v; }); };
+    S.eq(P).forEach(l => box.appendChild(l));
+    $("at-custom").hidden = sys !== "propio";
+  }
+  function setup(keepParams){
+    sys = $("at-sys").value; S = SYS[sys];
+    if (sys === "propio" && !compileCustom()) return;
+    if (!keepParams) { pv = {}; for (const k in S.p) pv[k] = S.p[k][0]; renderEq(); }
+    const base = S.start.slice();
+    for (let i = 0; i < 3000; i++) rk4(base, S.dt);
+    if (!base.every(Number.isFinite)) { $("at-msg").textContent = "La trayectoria escapa al infinito con estos valores."; return; }
+    orbit = []; let mn = [1e9,1e9,1e9], mx = [-1e9,-1e9,-1e9];
+    const probe = base.slice();
+    for (let i = 0; i < 9000; i++) { rk4(probe, S.dt); if (i % 3 === 0) { orbit.push(probe.slice()); for (let k = 0; k < 3; k++) { mn[k] = Math.min(mn[k], probe[k]); mx[k] = Math.max(mx[k], probe[k]); } } }
+    center = [0,1,2].map(k => (mn[k] + mx[k])/2);
+    radius = Math.max(...[0,1,2].map(k => (mx[k] - mn[k])/2)) || 1;
+    /* las letras se colocan sobre la órbita, a pasos exactos del integrador */
+    chars = [...poemFlat().slice(0, 260)]; n = chars.length; X = new Float64Array(n*3);
+    const gap = radius*.05, s = base.slice(); let acc = 0, k = 0, guard = 0;
+    while (k < n && guard < 400000) {
+      const prev = s.slice(); rk4(s, S.dt); guard++;
+      acc += Math.hypot(s[0]-prev[0], s[1]-prev[1], s[2]-prev[2]);
+      if (acc >= gap) { acc = 0; const i = n - 1 - k; X[i*3] = s[0]; X[i*3+1] = s[1]; X[i*3+2] = s[2]; k++; }
+    }
+    const eps = +$("at-eps").value;
+    if (eps > 0) for (let i = 0; i < n*3; i++) X[i] += (Math.random()*2 - 1)*eps;
+    t = 0; draw();
+  }
+  function proj(x, y, z){
+    const dx = x - center[0], dy = y - center[1], dz = z - center[2];
+    const ca = Math.cos(yaw), sa = Math.sin(yaw);
+    const px = dx*ca - dy*sa, d = dx*sa + dy*ca;
+    const py = dz*Math.cos(pitch) - d*Math.sin(pitch), depth = dz*Math.sin(pitch) + d*Math.cos(pitch);
+    const sc = Math.min(W, H)*.44/radius;
+    return [W/2 + px*sc, H/2 - py*sc, depth/radius];
+  }
+  function step(){
+    const sub = +$("at-speed").value, s = [0, 0, 0];
+    for (let i = 0; i < n; i++) {
+      s[0] = X[i*3]; s[1] = X[i*3+1]; s[2] = X[i*3+2];
+      for (let k = 0; k < sub; k++) rk4(s, S.dt);
+      if (!s.every(Number.isFinite) || Math.abs(s[0]) > 1e6) { $("at-msg").textContent = "Una letra escapó al infinito: cambia los parámetros o reinicia."; playing = false; $("at-play").textContent = "Seguir"; return; }
+      X[i*3] = s[0]; X[i*3+1] = s[1]; X[i*3+2] = s[2];
+    }
+    t += sub*S.dt;
+  }
+  function draw(){
+    if (!ctx) return;
+    ctx.fillStyle = "#0d0221"; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "rgba(185,103,255,.22)"; ctx.lineWidth = 1; ctx.beginPath();
+    orbit.forEach((p, i) => { const q = proj(p[0], p[1], p[2]); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); });
+    ctx.stroke();
+    const items = [];
+    for (let i = 0; i < n; i++) {
+      if (chars[i] === " ") continue;
+      const x = X[i*3], y = X[i*3+1], z = X[i*3+2], q = proj(x, y, z);
+      const v = S.f(x, y, z, pv), q2 = proj(x + v[0]*.01, y + v[1]*.01, z + v[2]*.01);
+      items.push({i, q, a: Math.atan2(q2[1] - q[1], q2[0] - q[0])});
+    }
+    items.sort((a, b) => a.q[2] - b.q[2]);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const base = Math.max(11, Math.min(W, H)/36);
+    for (const it of items) {
+      const sz = base*(1 + it.q[2]*.25);
+      ctx.font = `italic 500 ${sz.toFixed(1)}px "Bodoni Moda", "Times New Roman", serif`;
+      ctx.save(); ctx.translate(it.q[0], it.q[1]); ctx.rotate(it.a);
+      ctx.globalAlpha = .55 + .45*Math.max(0, Math.min(1, (it.q[2] + 1)/2));
+      ctx.fillStyle = grad(n > 1 ? it.i/(n - 1) : 0); ctx.fillText(chars[it.i], 0, 0); ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+    $("at-t").textContent = `t = ${fmt(t, 2)}`;
+    const now = performance.now();
+    if (now - lastRead > 450) {
+      lastRead = now;
+      const order = items.slice().sort((a, b) => a.q[0] - b.q[0]).map(it => chars[it.i]).join("");
+      $("at-read").innerHTML = `<b>LEÍDO DE IZQUIERDA A DERECHA:</b>${order.replace(/[&<>]/g, "")}`;
+    }
+  }
+  cv.style.touchAction = "none";
+  cv.addEventListener("pointerdown", e => { dragging = [e.clientX, e.clientY, yaw, pitch]; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e => { if (!dragging) return; yaw = dragging[2] + (e.clientX - dragging[0])*.008; pitch = Math.max(-1.4, Math.min(1.4, dragging[3] + (e.clientY - dragging[1])*.006)); if (!playing) draw(); });
+  const up = () => { dragging = null; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  $("at-sys").addEventListener("change", () => setup(false));
+  $("at-eps").addEventListener("change", () => setup(true));
+  $("at-reset").addEventListener("click", () => setup(true));
+  $("cgo").addEventListener("click", () => setup(true));
+  $("at-play").addEventListener("click", () => { playing = !playing; $("at-play").textContent = playing ? "Pausa" : "Seguir"; });
+  return {
+    init(){ this.resize(); setup(false); if (!playing) $("at-play").textContent = "Seguir"; },
+    resize(){ const r = sizeCanvas(cv, well, .72, 360, 580); ctx = r.ctx; W = r.W; H = r.H; if (n) draw(); },
+    frame(){ if (playing && n) { step(); if (!dragging && !reduced) yaw += .0015; } if (n) draw(); },
+    reload(){ setup(true); }
+  };
+})();
+
+/* =========================================================
+   ENTROPÍA
+   ========================================================= */
+const EN = (() => {
+  const cv = $("en-cv"), well = $("en-well");
+  let ctx, W = 600, H = 420, P = [], running = false, wallAt = Infinity, t = 0, dir = 1, T = 1, hist = [], N = 0, lnF = [0];
+  const GX = 12, GY = 8, m = 12;
+  let liveEl, maxEl;
+  function lnFact(k){ while (lnF.length <= k) lnF.push(lnF[lnF.length - 1] + Math.log(lnF.length)); return lnF[k]; }
+  function renderEq(){
+    const box = $("en-eq"); box.innerHTML = "";
+    box.appendChild(line(['<span class="v">S</span>', '<span class="op">=</span>', '<span class="v">k</span><sub style="font-size:.5em">B</sub>', ' ln ', '<span class="v">W</span>']));
+    liveEl = document.createElement("span"); liveEl.className = "live";
+    box.appendChild(line(['<span class="v">W</span>', '<span class="op">=</span>', FR('<span class="v">N</span>!', '∏ <span class="v">n</span><sub style="font-size:.5em">i</sub>!'), liveEl]));
+    maxEl = document.createElement("span"); maxEl.className = "live";
+    box.appendChild(line(['<span class="v">v</span>', '<span class="op">∝</span>', '√', param("T", "T", 1, .1, 4, .1, (k, v) => { T = v; }), maxEl]));
+  }
+  function layout(){
+    const lines = poemLines(); const half = W/2 - m*2;
+    let fs = 22, rows;
+    for (;;) {
+      const cw = fs*.5, per = Math.max(4, Math.floor(half/cw));
+      rows = []; lines.forEach(l => { let cur = ""; l.split(" ").forEach(w => { if ((cur + " " + w).trim().length > per && cur) { rows.push(cur); cur = w; } else cur = (cur + " " + w).trim(); }); if (cur) rows.push(cur); });
+      if (rows.length*fs*1.15 < H - 2*m || fs <= 12) break; fs -= 2;
+    }
+    P = []; const cw = fs*.5, lh = fs*1.15, y0 = (H - rows.length*lh)/2 + lh/2;
+    rows.forEach((r, ri) => [...r].forEach((ch, ci) => {
+      if (ch === " ") return;
+      const ang = Math.random()*Math.PI*2, sp = Math.sqrt(-2*Math.log(1 - Math.random()))*.9;
+      P.push({x: m + ci*cw + cw/2, y: y0 + ri*lh, x0: 0, y0: 0, vx: Math.cos(ang)*sp, vy: Math.sin(ang)*sp, ch, i: P.length});
+    }));
+    P.forEach(p => { p.x0 = p.x; p.y0 = p.y; });
+    N = P.length; EN.fs = fs;
+  }
+  function entropy(){
+    const cnt = new Array(GX*GY).fill(0);
+    for (const p of P) { const gx = Math.min(GX - 1, Math.max(0, Math.floor(p.x/W*GX))), gy = Math.min(GY - 1, Math.max(0, Math.floor(p.y/H*GY))); cnt[gx + gy*GX]++; }
+    let s = lnFact(N); for (const c of cnt) s -= lnFact(c);
+    return s;
+  }
+  function maxEntropy(){ const k = GX*GY, q = Math.floor(N/k), r = N % k; return lnFact(N) - (k - r)*lnFact(q) - r*lnFact(q + 1); }
+  function step(){
+    const s = Math.sqrt(T)*dir, wall = (dir > 0 ? t : t - 1) < wallAt;
+    for (const p of P) {
+      const ox = p.x;
+      p.x += p.vx*s; p.y += p.vy*s;
+      if (p.x < m) { p.x = 2*m - p.x; p.vx = -p.vx; } if (p.x > W - m) { p.x = 2*(W - m) - p.x; p.vx = -p.vx; }
+      if (p.y < m) { p.y = 2*m - p.y; p.vy = -p.vy; } if (p.y > H - m) { p.y = 2*(H - m) - p.y; p.vy = -p.vy; }
+      if (wall) { const w = W/2; if (ox <= w && p.x > w) { p.x = 2*w - p.x; p.vx = -p.vx; } else if (ox >= w && p.x < w) { p.x = 2*w - p.x; p.vx = -p.vx; } }
+    }
+    t += dir;
+    if (dir < 0 && t <= 0) { t = 0; running = false; dir = 1; $("en-state").textContent = "el poema volvió"; $("en-go").textContent = "Liberar el poema"; }
+  }
+  function draw(){
+    if (!ctx) return;
+    ctx.fillStyle = "#0d0221"; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "rgba(1,205,254,.12)"; ctx.lineWidth = 1;
+    for (let i = 1; i < GX; i++) { ctx.beginPath(); ctx.moveTo(i*W/GX, 0); ctx.lineTo(i*W/GX, H); ctx.stroke(); }
+    for (let j = 1; j < GY; j++) { ctx.beginPath(); ctx.moveTo(0, j*H/GY); ctx.lineTo(W, j*H/GY); ctx.stroke(); }
+    ctx.strokeStyle = "#01cdfe"; ctx.lineWidth = 2; ctx.strokeRect(m, m, W - 2*m, H - 2*m);
+    if (t < wallAt) { ctx.strokeStyle = "#ff71ce"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(W/2, m); ctx.lineTo(W/2, H - m); ctx.stroke(); }
+    ctx.font = `${Math.round(EN.fs*1.1)}px VT323, "Courier New", monospace`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (const p of P) { ctx.fillStyle = grad(N > 1 ? p.i/(N - 1) : 0); ctx.fillText(p.ch, p.x, p.y); }
+    const S = entropy(), Smax = maxEntropy();
+    if (running || !hist.length || hist[hist.length - 1] !== S) { hist.push(S); if (hist.length > 400) hist.shift(); }
+    /* curva de entropía */
+    const gw = Math.min(220, W*.4), gh = 60, gx = W - gw - m - 6, gy = H - gh - m - 6;
+    ctx.fillStyle = "rgba(13,2,33,.82)"; ctx.fillRect(gx, gy, gw, gh);
+    ctx.strokeStyle = "rgba(185,103,255,.6)"; ctx.strokeRect(gx, gy, gw, gh);
+    ctx.strokeStyle = "#05ffa1"; ctx.lineWidth = 1.5; ctx.beginPath();
+    hist.forEach((v, i) => { const x = gx + i/(399)*gw, y = gy + gh - 4 - (v/Math.max(Smax, 1))*(gh - 8); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.stroke();
+    ctx.fillStyle = "#9a82c9"; ctx.font = '15px VT323, monospace'; ctx.textAlign = "left"; ctx.fillText("S(t)", gx + 6, gy + 10);
+    liveEl.textContent = `ln W = ${fmt(S, 1)}`;
+    maxEl.textContent = `máximo posible: ${fmt(Smax, 1)} · N = ${N}`;
+    $("en-t").textContent = `t = ${fmt(t)}`;
+  }
+  $("en-go").addEventListener("click", () => { running = !running; $("en-go").textContent = running ? "Detener" : "Seguir"; $("en-state").textContent = running ? (dir > 0 ? "hacia adelante" : "hacia atrás") : "detenido"; });
+  $("en-wall").addEventListener("click", () => { if (wallAt === Infinity) { wallAt = t; if (!running) { running = true; $("en-go").textContent = "Detener"; $("en-state").textContent = "hacia adelante"; } } });
+  $("en-rev").addEventListener("click", () => {
+    if (t === 0) return;
+    /* el tiempo corre al revés: cada letra deshace exactamente su camino, rebotes incluidos */
+    dir = -dir; running = true; $("en-go").textContent = "Detener";
+    $("en-state").textContent = dir > 0 ? "hacia adelante" : "hacia atrás";
+  });
+  function reset(){ running = false; dir = 1; t = 0; wallAt = Infinity; hist = []; layout(); $("en-go").textContent = "Liberar el poema"; $("en-state").textContent = "en reposo"; draw(); }
+  $("en-reset").addEventListener("click", reset);
+  /* la reversión exacta necesita que la velocidad de cada paso sea la misma: invertir el tiempo cambia de signo dir y v a la vez */
+  return {
+    fs: 22,
+    init(){ renderEq(); this.resize(true); },
+    resize(force){ const r = sizeCanvas(cv, well, .62, 340, 540); const changed = r.W !== W || r.H !== H; ctx = r.ctx; W = r.W; H = r.H; if (force || changed || !P.length) reset(); else draw(); },
+    frame(){ if (running) { for (let k = 0; k < 2 && running; k++) step(); } draw(); },
+    reload(){ reset(); }
+  };
+})();
+
+/* =========================================================
+   CALOR
+   ========================================================= */
+const CA = (() => {
+  const cv = $("ca-cv"), well = $("ca-well");
+  let ctx, W = 600, H = 420, cols = 150, rows = 100, u, v, alpha = .2, playing = !reduced, t = 0, off, octx, img, drawing = false;
+  const CELL = 4;
+  const STOPS = [[0,[13,2,33]],[.2,[60,10,110]],[.45,[185,103,255]],[.7,[255,113,206]],[.88,[1,205,254]],[1,[255,251,150]]];
+  const LUT = new Uint8ClampedArray(256*3);
+  for (let i = 0; i < 256; i++) { const x = i/255; let k = 0; while (k < STOPS.length - 2 && x > STOPS[k+1][0]) k++; const [a, ca] = STOPS[k], [b, cb] = STOPS[k+1], f = (x - a)/(b - a); for (let j = 0; j < 3; j++) LUT[i*3+j] = ca[j] + (cb[j] - ca[j])*f; }
+  let totalEl;
+  function renderEq(){
+    const box = $("ca-eq"); box.innerHTML = "";
+    totalEl = document.createElement("span"); totalEl.className = "live";
+    box.appendChild(line([FR('∂<span class="v">u</span>', '∂<span class="v">t</span>'), '<span class="op">=</span>', param("alpha", "α", .2, .01, .24, .01, (k, val) => { alpha = val; }), '<span class="op">∇</span><sup style="font-size:.55em">2</sup><span class="v">u</span>', totalEl]));
+  }
+  function seed(){
+    cols = Math.max(60, Math.floor(W/CELL)); rows = Math.max(40, Math.floor(H/CELL));
+    u = new Float32Array(cols*rows); v = new Float32Array(cols*rows);
+    off = document.createElement("canvas"); off.width = cols; off.height = rows; octx = off.getContext("2d");
+    const lines = poemLines(); let fs = Math.floor(rows/(lines.length*1.5 + 1));
+    octx.font = `${fs}px VT323, monospace`;
+    const widest = Math.max(...lines.map(l => octx.measureText(l).width));
+    if (widest > cols - 6) fs = Math.floor(fs*(cols - 6)/widest);
+    octx.clearRect(0, 0, cols, rows); octx.fillStyle = "#fff"; octx.font = `${fs}px VT323, monospace`; octx.textBaseline = "middle"; octx.textAlign = "center";
+    const lh = fs*1.25, y0 = rows/2 - (lines.length - 1)*lh/2;
+    lines.forEach((l, i) => octx.fillText(l, cols/2, y0 + i*lh));
+    const d = octx.getImageData(0, 0, cols, rows).data;
+    for (let i = 0; i < cols*rows; i++) u[i] = d[i*4+3]/255;
+    img = octx.createImageData(cols, rows); t = 0;
+  }
+  function step(){
+    for (let y = 1; y < rows - 1; y++) for (let x = 1; x < cols - 1; x++) {
+      const i = y*cols + x;
+      v[i] = u[i] + alpha*(u[i-1] + u[i+1] + u[i-cols] + u[i+cols] - 4*u[i]);
+    }
+    for (let x = 0; x < cols; x++) { v[x] = 0; v[(rows-1)*cols + x] = 0; }
+    for (let y = 0; y < rows; y++) { v[y*cols] = 0; v[y*cols + cols - 1] = 0; }
+    const tmp = u; u = v; v = tmp; t++;
+  }
+  function draw(){
+    if (!ctx || !u) return;
+    let sum = 0;
+    for (let i = 0; i < cols*rows; i++) {
+      const val = u[i]; sum += val;
+      const k = Math.max(0, Math.min(255, Math.round(Math.sqrt(Math.max(0, val))*255)))*3;
+      img.data[i*4] = LUT[k]; img.data[i*4+1] = LUT[k+1]; img.data[i*4+2] = LUT[k+2]; img.data[i*4+3] = 255;
+    }
+    octx.putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(off, 0, 0, W, H);
+    totalEl.textContent = `calor total ∑u = ${fmt(sum, 0)}`;
+    $("ca-t").textContent = `t = ${fmt(t)}`;
+  }
+  function heatAt(e){
+    const r = cv.getBoundingClientRect(), gx = Math.floor((e.clientX - r.left)/r.width*cols), gy = Math.floor((e.clientY - r.top)/r.height*rows);
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const x = gx + dx, y = gy + dy; if (x < 1 || y < 1 || x >= cols - 1 || y >= rows - 1) continue;
+      if (dx*dx + dy*dy <= 5) u[y*cols + x] = Math.min(1.6, u[y*cols + x] + .6);
+    }
+    if (!playing) draw();
+  }
+  cv.style.touchAction = "none";
+  cv.addEventListener("pointerdown", e => { drawing = true; cv.setPointerCapture(e.pointerId); heatAt(e); });
+  cv.addEventListener("pointermove", e => { if (drawing) heatAt(e); });
+  const up = () => { drawing = false; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+  $("ca-play").addEventListener("click", () => { playing = !playing; $("ca-play").textContent = playing ? "Pausa" : "Seguir"; });
+  $("ca-reset").addEventListener("click", () => { seed(); draw(); });
+  return {
+    init(){ renderEq(); this.resize(true); if (!playing) $("ca-play").textContent = "Seguir"; },
+    resize(force){ const r = sizeCanvas(cv, well, .6, 320, 520); const changed = r.W !== W || r.H !== H; ctx = r.ctx; W = r.W; H = r.H; if (force || changed || !u) seed(); draw(); },
+    frame(){ if (playing) for (let k = 0; k < 3; k++) step(); draw(); },
+    reload(){ seed(); draw(); }
+  };
+})();
+
+/* ---------- poema compartido ---------- */
+function reloadAll(){ AT.reload(); EN.reload(); CA.reload(); }
+$("poem-apply").addEventListener("click", reloadAll);
+$("poem-file").addEventListener("change", e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $("poem").value = String(r.result); reloadAll(); }; r.readAsText(f); e.target.value = ""; });
+
+/* ---------- arranque ---------- */
+const startMod = (location.hash || "").slice(1);
+MODS.forEach(x => $(x).hidden = false);
+AT.init(); EN.init(); CA.init();
+openMod(MODS.includes(startMod) ? startMod : "atractor");
+let rsT; new ResizeObserver(() => { clearTimeout(rsT); rsT = setTimeout(() => { if (active === "atractor") AT.resize(); if (active === "entropia") EN.resize(); if (active === "calor") CA.resize(); }, 150); }).observe(document.querySelector(".desk"));
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { CA.reload(); EN.reload(); });
+function loop(){
+  if (!document.hidden) { if (active === "atractor") AT.frame(); else if (active === "entropia") EN.frame(); else CA.frame(); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memoria de cálculo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --papel:#f3efe4; --tinta:#1f2a33; --azul:#2c4a63; --tenue:#8a8f8c;
+    --fisura:#b5562f; --linea:rgba(44,74,99,.18);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--papel); color:var(--tinta);
+    font-family:"Spectral",Georgia,serif;
+    background-image:
+      linear-gradient(var(--linea) 1px, transparent 1px),
+      linear-gradient(90deg, var(--linea) 1px, transparent 1px);
+    background-size:24px 24px;
+  }
+  main{max-width:720px; margin:0 auto; padding:28px 18px 60px}
+  header .rotulo{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--azul)}
+  h1{font-weight:600; font-size:34px; margin:6px 0 8px}
+  .instruccion{font-size:17px; line-height:1.5; margin:0 0 22px}
+  #obra{position:relative; min-height:620px; display:flex; flex-direction:column; justify-content:flex-end; border-left:2px solid var(--azul); border-right:2px solid var(--azul); padding:0 0; background:rgba(243,239,228,.85)}
+  .piso{
+    position:relative; overflow:hidden;
+    border-top:3px solid var(--azul);
+    padding:12px 14px 10px; min-height:0;
+    max-height:120px; transition:max-height .7s ease, opacity .5s ease, padding .7s ease, border-width .7s;
+    cursor:pointer;
+  }
+  .piso:hover{background:rgba(44,74,99,.05)}
+  .piso.retirado{max-height:0; padding-top:0; padding-bottom:0; opacity:0; border-top-width:0}
+  .piso .nivel{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--tenue); letter-spacing:.08em; text-transform:uppercase; display:flex; justify-content:space-between; gap:8px}
+  .piso .verso{font-size:18px; line-height:1.35; margin-top:4px; display:block}
+  .piso .verso span{display:inline-block; white-space:pre; transition:transform .4s}
+  .barra{height:3px; background:rgba(44,74,99,.15); margin-top:8px}
+  .barra i{display:block; height:100%; background:var(--azul); transition:width .6s, background .6s}
+  .piso.fisura .verso{color:var(--fisura); font-style:italic}
+  .piso.fisura .barra i{background:var(--fisura)}
+  .piso.fisura::after{
+    content:""; position:absolute; left:38%; top:0; width:60px; height:100%;
+    background:linear-gradient(115deg, transparent 47%, var(--fisura) 48%, transparent 50%, transparent 62%, var(--fisura) 63%, transparent 64%);
+    opacity:.55; pointer-events:none;
+  }
+  .terreno{height:26px; background:repeating-linear-gradient(135deg, var(--azul) 0 2px, transparent 2px 9px); border-top:3px solid var(--azul)}
+  #escombros{position:absolute; inset:0; pointer-events:none; overflow:visible}
+  #escombros span{position:absolute; font-size:18px; white-space:pre; transition:transform 1.4s cubic-bezier(.5,0,.9,.6), opacity 1.4s; color:var(--tinta)}
+  .memoria{margin-top:26px; font-family:"IBM Plex Mono",monospace; font-size:13px; line-height:1.55}
+  .memoria h2{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--azul); margin:0 0 8px; border-bottom:1px solid var(--azul); padding-bottom:6px}
+  #bitacora p{margin:0 0 10px}
+  #bitacora p.aviso{color:var(--fisura)}
+  .acciones{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px}
+  button{font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.06em; padding:10px 14px; background:var(--azul); color:var(--papel); border:0; cursor:pointer}
+  button.sec{background:transparent; color:var(--azul); border:1px solid var(--azul)}
+  #dictamen{display:none; margin-top:22px; padding:16px 18px; border:2px solid var(--tinta); background:var(--papel); font-size:18px; line-height:1.5}
+  #dictamen .sello{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--fisura); display:block; margin-bottom:6px}
+  .bloqueado .piso{cursor:default}
+  @media (max-width:520px){ h1{font-size:28px} .piso .verso, #escombros span{font-size:16px} #obra{min-height:600px} }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="rotulo">Ingeniería civil · Artefacto literario</div>
+    <h1>Memoria de cálculo</h1>
+    <p class="instruccion">Cada verso es una losa del edificio y carga con todos los versos que tiene encima. Toca un verso para retirarlo: la estructura calcula si podía prescindir de él.</p>
+  </header>
+
+  <section id="obra" aria-label="Edificio de versos">
+    <div id="escombros"></div>
+    <div id="pisos" style="display:flex;flex-direction:column;justify-content:flex-end;flex:1"></div>
+    <div class="terreno" id="terreno"></div>
+  </section>
+
+  <div class="acciones">
+    <button id="firmar">Firmar memoria de cálculo</button>
+    <button id="reiniciar" class="sec">Reiniciar</button>
+  </div>
+
+  <div id="dictamen"></div>
+
+  <section class="memoria">
+    <h2>Bitácora de la memoria de cálculo</h2>
+    <div id="bitacora"><p>Estructura de siete niveles. Todas las losas trabajan dentro de su capacidad.</p></div>
+  </section>
+</main>
+
+<script>
+const BASE = [
+  {n:"Planta baja", w:1,   c:9.5, t:"En la planta baja la portera barre el polvo que bajan los demás.",
+   f:"La portera barre un polvo nuevo, más fino, que cae del techo."},
+  {n:"Nivel 1",     w:1,   c:8.2, t:"En el primero una mujer cose uniformes escolares hasta la madrugada.",
+   f:"La mujer del primero cose con la ventana abierta porque la puerta ya no cierra."},
+  {n:"Nivel 2",     w:1,   c:6.8, t:"En el segundo un estudiante repasa estática con la lámpara encendida.",
+   f:"El estudiante del segundo calcula otra vez la viga que cruje sobre su cama."},
+  {n:"Nivel 3",     w:1,   c:5.4, t:"En el tercero dos ancianos guardan las llaves de quienes se mudaron.",
+   f:"Los ancianos del tercero oyen girar una llave en una puerta que ya no está."},
+  {n:"Nivel 4",     w:1,   c:4.0, t:"En el cuarto una niña cuenta las grietas del techo antes de dormir.",
+   f:"La niña del cuarto pierde la cuenta de las grietas a la mitad del techo."},
+  {n:"Nivel 5",     w:1,   c:2.6, t:"En el quinto vive un perro que ladra cada vez que pasa el metro.",
+   f:"El perro del quinto ladra aunque el metro todavía no pasa."},
+  {n:"Azotea",      w:1.6, c:1.2, t:"En la azotea tienden ropa junto al tinaco, que pesa más que todos.",
+   f:"En la azotea la ropa tendida se inclina hacia el mismo lado."}
+];
+const T = x => Math.round(x*100);   // toneladas ficticias
+let pisos, terminado;
+const $pisos = document.getElementById("pisos");
+const $esc = document.getElementById("escombros");
+const $obra = document.getElementById("obra");
+const $bit = document.getElementById("bitacora");
+const $dict = document.getElementById("dictamen");
+
+function iniciar(){
+  pisos = BASE.map((p,i)=>({...p, i, estado:"ok", el:null}));
+  terminado = false;
+  $pisos.innerHTML = ""; $esc.innerHTML = ""; $dict.style.display="none";
+  $obra.classList.remove("bloqueado");
+  $bit.innerHTML = "<p>Estructura de siete niveles. Todas las losas trabajan dentro de su capacidad.</p>";
+  [...pisos].reverse().forEach(p=>{
+    const d = document.createElement("div");
+    d.className = "piso";
+    d.innerHTML = `<div class="nivel"><span>${p.n}</span><span class="carga"></span></div>
+                   <span class="verso"></span><div class="barra"><i></i></div>`;
+    d.addEventListener("click", ()=>retirar(p));
+    p.el = d; $pisos.appendChild(d);
+    escribir(p, p.t);
+  });
+  actualizar();
+}
+
+function escribir(p, texto){
+  const v = p.el.querySelector(".verso");
+  v.innerHTML = "";
+  texto.split(" ").forEach((pal, k, arr)=>{
+    const s = document.createElement("span");
+    s.textContent = pal + (k < arr.length-1 ? " " : "");
+    v.appendChild(s);
+  });
+}
+
+const vivos = () => pisos.filter(p => p.estado==="ok" || p.estado==="fisura");
+const cargaSobre = p => vivos().filter(q => q.i > p.i).reduce((a,q)=>a+q.w, 0);
+
+function actualizar(){
+  vivos().forEach(p=>{
+    const L = cargaSobre(p), u = Math.min(L/p.c, 1);
+    p.el.querySelector(".carga").textContent = `carga ${T(L)} t / capacidad ${T(p.c)} t`;
+    p.el.querySelector(".barra i").style.width = (u*100)+"%";
+    if (u > 0.75 && p.estado==="ok") fisurar(p);
+  });
+}
+
+function fisurar(p){
+  if (p.estado==="fisura") return;
+  p.estado = "fisura"; p.el.classList.add("fisura"); escribir(p, p.f);
+}
+
+function anotar(txt, aviso){
+  const e = document.createElement("p"); e.textContent = txt;
+  if (aviso) e.className = "aviso";
+  $bit.prepend(e);
+}
+
+function retirar(p){
+  if (terminado || !(p.estado==="ok" || p.estado==="fisura")) return;
+  p.estado = "retirado"; p.el.classList.add("retirado");
+  const arriba = vivos().filter(q => q.i > p.i);
+  let masa = arriba.reduce((a,q)=>a+q.w, 0);
+  anotar(`Se retira el verso de ${p.n.toLowerCase()}: «${p.t}»`);
+
+  if (masa === 0){ anotar("No había nada encima. Las cargas no cambian."); return fin(); }
+
+  let abajo = vivos().filter(q => q.i < p.i).sort((a,b)=>b.i-a.i);
+  let cayendo = [...arriba];
+  if (!abajo.length){
+    anotar(`Sin apoyo inferior, ${T(masa)} t caen al terreno.`, true);
+    derrumbar(cayendo); return fin();
+  }
+  for (const losa of abajo){
+    const impacto = 2*masa;
+    if (impacto > losa.c){
+      anotar(`${T(masa)} t caen sobre ${losa.n.toLowerCase()}. Impacto de ${T(impacto)} t contra una capacidad de ${T(losa.c)} t: la losa falla.`, true);
+      cayendo.push(losa); masa += losa.w;
+      continue;
+    }
+    if (impacto > 0.75*losa.c){
+      losa.c *= 0.7; fisurar(losa);
+      anotar(`${T(masa)} t caen sobre ${losa.n.toLowerCase()}. Impacto de ${T(impacto)} t: resiste, pero queda dañada y su capacidad baja a ${T(losa.c)} t.`, true);
+    } else {
+      anotar(`${T(masa)} t descienden sobre ${losa.n.toLowerCase()}. Impacto de ${T(impacto)} t dentro de su capacidad: los versos de arriba se reacomodan.`);
+    }
+    const sobreviven = cayendo.filter(q => q.i > p.i);
+    if (cayendo.length > sobreviven.length) derrumbar(cayendo);
+    return actualizarYfin();
+  }
+  anotar("El colapso llega hasta el terreno.", true);
+  derrumbar(cayendo); fin();
+}
+
+function actualizarYfin(){ setTimeout(()=>{ actualizar(); fin(); }, 750); }
+
+function derrumbar(lista){
+  const ob = $obra.getBoundingClientRect();
+  const suelo = document.getElementById("terreno").getBoundingClientRect().top - ob.top;
+  lista.forEach((p, k)=>{
+    p.estado = "colapso";
+    p.el.querySelectorAll(".verso span").forEach(s=>{
+      const r = s.getBoundingClientRect();
+      const e = document.createElement("span");
+      e.textContent = s.textContent;
+      e.style.left = (r.left-ob.left)+"px"; e.style.top = (r.top-ob.top)+"px";
+      $esc.appendChild(e);
+      const dy = suelo - (r.top-ob.top) - 22 - Math.random()*40;
+      const dx = (Math.random()-.5)*120;
+      const rot = (Math.random()-.5)*160;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        e.style.transitionDelay = (k*0.12 + Math.random()*0.2)+"s";
+        e.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+        e.style.opacity = .55;
+      }));
+    });
+    p.el.style.visibility = "hidden";
+    setTimeout(()=>{ p.el.classList.add("retirado"); }, 300);
+  });
+}
+
+function fin(forzado){
+  const quedan = vivos();
+  const colapsados = pisos.filter(p=>p.estado==="colapso").length;
+  const retirados = pisos.filter(p=>p.estado==="retirado").length;
+  if (!forzado && quedan.length) return;
+  terminado = true; $obra.classList.add("bloqueado");
+  const fis = quedan.filter(p=>p.estado==="fisura").length;
+  let txt;
+  if (!quedan.length && colapsados){
+    txt = "Colapso progresivo. Cada losa resistía el peso que tenía encima, pero ninguna estaba calculada para recibir la caída de las otras, de modo que el poema terminó en el terreno con las palabras revueltas.";
+  } else if (!quedan.length){
+    txt = "Todos los versos fueron retirados uno por uno y el terreno quedó limpio, aunque la memoria de cálculo no registra a dónde se fueron sus habitantes.";
+  } else if (colapsados){
+    txt = `Colapso parcial. Quedan en pie ${quedan.length} niveles con ${fis} fisuras, y ${colapsados} versos yacen en el terreno sin que nadie haya firmado su retiro.`;
+  } else {
+    txt = `La estructura sigue en pie con ${retirados} versos menos y ${fis} fisuras visibles. La memoria queda firmada, aunque los habitantes de los versos retirados no aparecen en ella.`;
+  }
+  $dict.innerHTML = `<span class="sello">Dictamen</span>${txt}`;
+  $dict.style.display = "block";
+}
+
+document.getElementById("firmar").addEventListener("click", ()=>{ if(!terminado) fin(true); });
+document.getElementById("reiniciar").addEventListener("click", iniciar);
+iniciar();
+</script>
+</body>
+</html>

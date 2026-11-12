@@ -1,0 +1,578 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Diccionario de física poética</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Rubik+Mono+One&family=Bodoni+Moda:ital,opsz,wght@1,6..96,400;1,6..96,500;1,6..96,700&display=swap">
+<style>
+/* Layout: un archivo de ayuda de 1995 (.HLP) en clave vaporwave; ventana del diccionario con fichas en rejilla de dos columnas, y abajo la ventana para escribir una entrada nueva con su vista previa */
+*{box-sizing:border-box}
+:root{
+  --night:#0d0221; --violet:#24083f; --pink:#ff71ce; --cyan:#01cdfe; --mint:#05ffa1;
+  --lilac:#b967ff; --cream:#fffb96; --chrome:#dccbf7; --shade:#5b3d86; --ink:#1b0933; --dimtext:#9a82c9; --paper:#f6f0ff;
+  --term:"VT323","Courier New",monospace;
+  --block:"Rubik Mono One","Arial Black",Impact,sans-serif;
+  --serif:"Bodoni Moda","Didot","Bodoni 72","Times New Roman",serif;
+  color-scheme:dark;
+}
+html{background:var(--night)}
+body{background:linear-gradient(180deg,var(--violet) 0%,var(--night) 55%,#1a0433 100%) fixed;color:var(--chrome);font-family:var(--term);font-size:20px;line-height:1.25;overflow-x:hidden}
+body::after{content:"";position:fixed;left:-50%;right:-50%;bottom:-10vh;height:50vh;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,113,206,.3) 0 2px,transparent 2px 70px),repeating-linear-gradient(0deg,rgba(255,113,206,.3) 0 2px,transparent 2px 70px);
+  transform:perspective(320px) rotateX(62deg);transform-origin:50% 100%;
+  -webkit-mask-image:linear-gradient(to top,#000 20%,transparent 85%);mask-image:linear-gradient(to top,#000 20%,transparent 85%)}
+.desk{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;display:grid;gap:30px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px}
+.big{font-size:clamp(2.3rem,8.5vw,4.4rem);line-height:.9;font-weight:900;margin:0;letter-spacing:.02em;
+  background:linear-gradient(180deg,var(--cream) 0%,var(--pink) 48%,var(--lilac) 52%,var(--cyan) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(3px 3px 0 rgba(1,205,254,.55))}
+.sub{font-size:1.35rem;color:var(--cyan)}
+.sub .jp{color:var(--pink);margin-left:.5em}
+
+.win{background:var(--chrome);color:var(--ink);border:2px solid;border-color:#fff var(--shade) var(--shade) #fff;box-shadow:8px 8px 0 rgba(1,205,254,.45);min-width:0}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 4px 3px 8px;background:linear-gradient(90deg,var(--pink),var(--lilac) 55%,var(--cyan));color:#fff;font-size:1.15rem;letter-spacing:.04em;text-shadow:1px 1px 0 var(--ink)}
+.bar .title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ctl{display:flex;gap:3px;flex:none}
+.ctl i{display:grid;place-items:center;width:20px;height:18px;background:var(--chrome);color:var(--ink);font-style:normal;font-size:.95rem;line-height:1;border:2px solid;border-color:#fff var(--shade) var(--shade) #fff;text-shadow:none}
+.body{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:10px}
+.tools{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+label.inl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;max-width:100%}
+.btn{font-family:var(--term);font-size:1.1rem;color:var(--ink);background:var(--chrome);border:2px solid;border-color:#fff var(--shade) var(--shade) #fff;padding:2px 12px;cursor:pointer}
+.btn:active,.btn[aria-pressed="true"]{border-color:var(--shade) #fff #fff var(--shade);background:#cbb7ef}
+.btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,canvas:focus-visible{outline:2px dotted var(--pink);outline-offset:2px}
+textarea,input[type=text],input[type=search],select{font-family:var(--term);font-size:1.15rem;color:var(--ink);background:#fff;border:2px solid;border-color:var(--shade) #fff #fff var(--shade);padding:4px 8px;min-width:0;box-sizing:border-box;width:100%}
+textarea{resize:vertical;line-height:1.15}
+input[type=range]{accent-color:var(--pink);width:140px;max-width:100%}
+
+/* instrucciones */
+.howto{background:var(--paper);border:2px solid;border-color:var(--shade) #fff #fff var(--shade);padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.howto ol{margin:0;padding-left:1.4em;display:grid;grid-template-columns:minmax(0,1fr);gap:4px;font-size:1.2rem}
+.rule{font-family:var(--serif);font-style:italic;font-size:1.25rem;color:var(--ink);border-top:1px dashed var(--shade);padding-top:8px}
+.rule b{font-family:var(--block);font-style:normal;font-weight:400;font-size:.85em;color:#c2008a}
+
+/* índice */
+.index{display:flex;flex-wrap:wrap;gap:4px}
+.index a{font-family:var(--block);font-size:.75rem;color:var(--ink);text-decoration:none;border:2px solid;border-color:#fff var(--shade) var(--shade) #fff;padding:4px 7px;background:var(--chrome)}
+.index a:focus-visible{outline:2px dotted var(--pink)}
+
+/* fichas */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:14px}
+.entry{background:var(--night);color:var(--chrome);border:2px solid;border-color:var(--shade) #fff #fff var(--shade);display:grid;gap:8px;padding:14px 14px 12px;min-width:0;scroll-margin-top:16px}
+.entry .head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.entry h3{font-family:var(--block);font-weight:400;font-size:clamp(1.15rem,3.6vw,1.55rem);margin:0;color:var(--pink);letter-spacing:.02em;text-shadow:3px 3px 0 rgba(185,103,255,.5);word-break:break-word}
+.entry .mass{font-family:var(--term);font-size:1.05rem;color:var(--cream);white-space:nowrap}
+.formula{font-family:var(--serif);font-style:italic;font-size:1.3rem;color:var(--cyan);min-height:1.3em;overflow-wrap:anywhere}
+.entry dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline}
+.entry dt{font-family:var(--term);font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dimtext)}
+.entry dd{margin:0;font-size:1.12rem;line-height:1.2;min-width:0;overflow-wrap:anywhere}
+.entry dd.poe{font-family:var(--serif);font-style:italic;font-size:1.2rem;line-height:1.3;color:var(--cream)}
+.stage{border:1px solid rgba(185,103,255,.5);background:#120328}
+.stage canvas{display:block;width:100%;height:190px;touch-action:none;cursor:grab}
+.foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:1rem;color:var(--dimtext)}
+.foot .hint{color:var(--mint)}
+.foot button{font-family:var(--term);font-size:1rem;color:var(--pink);background:none;border:none;text-decoration:underline;cursor:pointer;padding:0}
+.tag{color:var(--cyan)}
+.empty{font-size:1.15rem;color:var(--shade);padding:4px 2px}
+
+/* formulario */
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;align-items:start}
+.fields{display:grid;gap:8px;min-width:0}
+.fields label{display:grid;gap:3px;font-size:1.1rem}
+.fields small{color:var(--shade);font-size:.95rem}
+.msg{min-height:1.2em;font-size:1.1rem;color:#b0006e}
+.msg.ok{color:#0a7a52}
+</style>
+
+<div class="desk">
+  <header>
+    <h1 class="big" aria-label="Babel 95">ＢＡＢＥＬ ９５</h1>
+    <div class="sub">diccionario de física poética <span class="jp" aria-hidden="true">詩的物理辞典</span></div>
+  </header>
+
+  <section class="win" aria-labelledby="t-dic">
+    <div class="bar"><span class="title" id="t-dic">DICCIONARIO.HLP</span><span class="ctl" aria-hidden="true"><i>?</i><i>_</i><i>×</i></span></div>
+    <div class="body">
+      <div class="howto">
+        <ol>
+          <li>Cada entrada tiene tres capas: lo que dice la física, lo que dice el poema y lo que hace la palabra.</li>
+          <li>En el recuadro oscuro, la palabra obedece la ley que nombra. Tócala o arrástrala: la nota verde dice cómo.</li>
+          <li>Si todo va muy rápido, baja la velocidad. Con «Pausa» puedes detener el diccionario entero.</li>
+          <li>Al final hay un formulario para escribir tu propia entrada.</li>
+        </ol>
+        <div class="rule">Regla de este diccionario: <b>la masa de una palabra es su número de letras.</b> «Luz» pesa 3; «pesadumbre» pesa 10, y por eso le cuesta más moverse.</div>
+      </div>
+      <div class="tools">
+        <label class="inl">Velocidad <input type="range" id="speed" min="0.1" max="1.5" step="0.05" value="0.6"><span id="speed-v">0.6×</span></label>
+        <button class="btn" id="pause">Pausa</button>
+        <label class="inl" style="flex:1 1 200px">Buscar <input type="search" id="q" placeholder="una palabra…" autocomplete="off"></label>
+      </div>
+      <nav class="index" id="index" aria-label="Índice"></nav>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="none" hidden>Ninguna entrada coincide con la búsqueda.</div>
+    </div>
+  </section>
+
+  <section class="win" aria-labelledby="t-new">
+    <div class="bar"><span class="title" id="t-new">NUEVA_ENTRADA.EXE</span><span class="ctl" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span></div>
+    <div class="body">
+      <div class="form">
+        <form class="fields" id="form" novalidate>
+          <label>Palabra <input type="text" id="f-word" maxlength="18" required placeholder="por ejemplo: presión"></label>
+          <label>Definición física <textarea id="f-phys" rows="2" maxlength="240" placeholder="qué dice la ciencia"></textarea></label>
+          <label>Fórmula <small>(opcional)</small> <input type="text" id="f-form" maxlength="80" placeholder="P = F / A"></label>
+          <label>Definición poética <textarea id="f-poe" rows="2" maxlength="240" placeholder="qué diría un poema"></textarea></label>
+          <label>Lo que hace la palabra <select id="f-fx"></select></label>
+          <label>Firma <small>(opcional)</small> <input type="text" id="f-sign" maxlength="40" placeholder="tu nombre o un seudónimo"></label>
+          <div class="tools"><button class="btn" type="submit">Agregar al diccionario</button></div>
+          <div class="msg" id="f-msg" role="status"></div>
+        </form>
+        <div id="preview-slot"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const grad = t => `rgb(${Math.round(255 - 254*t)},${Math.round(113 + 92*t)},${Math.round(206 + 48*t)})`;
+const TAU = Math.PI*2;
+
+/* ---------- entradas base ---------- */
+const BASE = [
+  {palabra:"gravedad", fisica:"Atracción entre cuerpos con masa. Cerca de la Tierra, todo cae con la misma aceleración.", formula:"g ≈ 9.8 m/s²", poetica:"La costumbre que tienen las cosas de volver a casa.", efecto:"gravedad"},
+  {palabra:"masa", fisica:"Cantidad de materia de un cuerpo y medida de su resistencia a cambiar de movimiento.", formula:"m", poetica:"Lo que pesa una palabra. Aquí, el número de sus letras.", efecto:"masa"},
+  {palabra:"fuerza", fisica:"Interacción que cambia el estado de movimiento de un cuerpo.", formula:"F = m · a", poetica:"Lo que hace falta para que algo deje de ser como era.", efecto:"fuerza"},
+  {palabra:"inercia", fisica:"Tendencia de un cuerpo a conservar su reposo o su movimiento mientras nada lo perturbe.", formula:"ΣF = 0  ⇒  v constante", poetica:"La terquedad de lo que no quiere cambiar de rumbo.", efecto:"inercia"},
+  {palabra:"fricción", fisica:"Fuerza que se opone al deslizamiento entre dos superficies en contacto.", formula:"F = μ · N", poetica:"El modo en que el mundo nos pide que vayamos despacio, y en el camino nos cobra algunas letras.", efecto:"friccion"},
+  {palabra:"parábola", fisica:"Trayectoria de un cuerpo lanzado cuando solo actúa la gravedad.", formula:"y = x tan θ − g x² / (2 v² cos² θ)", poetica:"Lo que dibuja una piedra cuando alguien le pide que cuente una historia.", efecto:"parabola"},
+  {palabra:"péndulo", fisica:"Cuerpo suspendido de un punto que oscila alrededor de su posición de equilibrio.", formula:"T = 2π √(L / g)", poetica:"Un reloj que duda entre irse y quedarse.", efecto:"pendulo"},
+  {palabra:"resorte", fisica:"Cuerpo elástico que ejerce una fuerza proporcional a lo que se le deforma.", formula:"F = −k · x", poetica:"La memoria que tienen las cosas de la forma que tuvieron.", efecto:"resorte"},
+  {palabra:"onda", fisica:"Perturbación que transporta energía de un lugar a otro sin transportar materia.", formula:"y = A sen(kx − ωt)", poetica:"Una noticia que viaja sin llevarse a nadie.", efecto:"onda"},
+  {palabra:"refracción", fisica:"Cambio de dirección de una onda cuando pasa de un medio a otro.", formula:"n₁ sen θ₁ = n₂ sen θ₂", poetica:"El momento en que la luz cambia de idea al entrar en el agua.", efecto:"refraccion"},
+  {palabra:"órbita", fisica:"Trayectoria de un cuerpo que cae continuamente alrededor de otro sin llegar a tocarlo.", formula:"F = G m₁ m₂ / r²", poetica:"Una caída que nunca termina de llegar.", efecto:"orbita"},
+  {palabra:"entropía", fisica:"Medida del número de maneras en que pueden acomodarse las partes de un sistema.", formula:"S = k ln W", poetica:"El orden en que dejamos las cosas antes de irnos.", efecto:"entropia"}
+];
+
+/* ---------- comportamientos ---------- */
+const FX = {};
+const H = 190;
+function layoutWord(s, cx, cy){ let x = cx - s.total/2; return s.L.map(l => { const o = {...l, x: x + l.w/2, y: cy, x0: x + l.w/2, y0: cy}; x += l.w; return o; }); }
+function drawLetter(s, ch, x, y, i, rot, alpha){
+  if (ch === " ") return;
+  const c = s.ctx; c.save(); c.translate(x, y); if (rot) c.rotate(rot);
+  c.globalAlpha = alpha == null ? 1 : alpha; c.fillStyle = grad(s.n > 1 ? i/(s.n - 1) : 0); c.fillText(ch, 0, 0); c.restore();
+}
+function floorLine(s){ const c = s.ctx; c.strokeStyle = "rgba(255,113,206,.35)"; c.lineWidth = 1; c.beginPath(); c.moveTo(0, H - 6); c.lineTo(s.W, H - 6); c.stroke(); }
+function label(s, txt, x, y, color){ const c = s.ctx; c.save(); c.font = '17px VT323, monospace'; c.fillStyle = color || "#9a82c9"; c.textAlign = "left"; c.fillText(txt, x, y); c.restore(); }
+
+FX.gravedad = {nombre:"cae y se apila (gravedad)", hint:"toca para soltarla otra vez",
+  init(s){ s.P = layoutWord(s, s.W/2, 34).map((p, i) => ({...p, vy:0, delay:i*9, done:false})); s.stack = new Map(); s.wait = 0; },
+  step(s, dt){
+    let all = true;
+    for (const p of s.P) {
+      if (p.done) continue; all = false;
+      if (p.delay > 0) { p.delay -= dt; continue; }
+      p.vy += .28*dt; p.y += p.vy*dt;
+      const bin = Math.round(p.x/(s.fs*.75)), top = H - 6 - s.fs*.5 - (s.stack.get(bin) || 0);
+      if (p.y >= top) { p.y = top; p.done = true; s.stack.set(bin, (s.stack.get(bin) || 0) + s.fs*.82); }
+    }
+    if (all) { s.wait += dt; if (s.wait > 160) this.init(s); }
+  },
+  draw(s){ floorLine(s); s.P.forEach((p, i) => drawLetter(s, p.ch, p.x, p.y, i)); },
+  tap(s){ this.init(s); }
+};
+FX.masa = {nombre:"se pesa en una báscula (masa)", hint:"toca para pesarla otra vez",
+  init(s){ s.m = s.L.filter(l => l.ch !== " ").length; s.y0 = H*.5; s.eq = Math.min(H - 40, s.y0 + s.m*3.2); s.py = s.y0; s.pv = 0; s.wy = 18; s.wv = 0; s.on = false; s.wait = 0; },
+  step(s, dt){
+    if (!s.on) { s.wv += .3*dt; s.wy += s.wv*dt; if (s.wy >= s.py - s.fs*.55) { s.on = true; s.pv = s.wv*.35; } }
+    else { const a = -.03*(s.py - s.eq) - .07*s.pv; s.pv += a*dt; s.py += s.pv*dt; s.wy = s.py - s.fs*.55; s.wait += dt; if (s.wait > 380) this.init(s); }
+  },
+  draw(s){
+    const c = s.ctx, cx = s.W/2, pw = Math.max(s.total*.75, 90);
+    c.strokeStyle = "#01cdfe"; c.lineWidth = 2; c.beginPath();
+    const coils = 9, top = s.py + 4, bot = H - 8;
+    c.moveTo(cx, top); for (let k = 1; k <= coils; k++) c.lineTo(cx + (k % 2 ? 12 : -12), top + (bot - top)*k/(coils + 1)); c.lineTo(cx, bot); c.stroke();
+    c.strokeStyle = "#ff71ce"; c.lineWidth = 3; c.beginPath(); c.moveTo(cx - pw/2, s.py); c.lineTo(cx + pw/2, s.py); c.stroke();
+    let x = cx - s.total/2; s.L.forEach((l, i) => { drawLetter(s, l.ch, x + l.w/2, s.wy, i); x += l.w; });
+    label(s, `m = ${s.m}`, 10, 22, "#fffb96");
+    for (let k = 0; k <= 10; k++) { const yy = s.y0 + k*6.4; c.strokeStyle = "rgba(220,203,247,.35)"; c.beginPath(); c.moveTo(s.W - 28, yy); c.lineTo(s.W - 18, yy); c.stroke(); }
+  },
+  tap(s){ this.init(s); }
+};
+FX.fuerza = {nombre:"se empuja (fuerza)", hint:"arrastra desde la palabra y suelta para empujarla",
+  init(s){ s.m = Math.max(1, s.L.filter(l => l.ch !== " ").length); s.x = s.W/2; s.y = H/2; s.vx = 0; s.vy = 0; s.arrow = null; s.idle = 0; s.lastA = 0; },
+  push(s, fx, fy){ s.vx += fx/s.m; s.vy += fy/s.m; s.lastA = Math.hypot(fx, fy)/s.m; s.arrow = {x:s.x, y:s.y, fx, fy, life:60}; s.idle = 0; },
+  step(s, dt){
+    s.x += s.vx*dt; s.y += s.vy*dt; s.vx *= Math.pow(.985, dt); s.vy *= Math.pow(.985, dt);
+    const hw = s.total/2 + 4;
+    if (s.x < hw) { s.x = hw; s.vx = Math.abs(s.vx); } if (s.x > s.W - hw) { s.x = s.W - hw; s.vx = -Math.abs(s.vx); }
+    if (s.y < s.fs) { s.y = s.fs; s.vy = Math.abs(s.vy); } if (s.y > H - s.fs*.8) { s.y = H - s.fs*.8; s.vy = -Math.abs(s.vy); }
+    if (s.arrow) { s.arrow.life -= dt; if (s.arrow.life <= 0) s.arrow = null; }
+    s.idle += dt; if (s.idle > 240) { const a = Math.random()*TAU; this.push(s, Math.cos(a)*40, Math.sin(a)*24); }
+  },
+  draw(s){
+    if (s.arrow) { const c = s.ctx, a = s.arrow; c.strokeStyle = `rgba(5,255,161,${a.life/60})`; c.lineWidth = 2; c.beginPath(); c.moveTo(a.x - a.fx*1.2, a.y - a.fy*1.2); c.lineTo(a.x, a.y); c.stroke(); }
+    let x = s.x - s.total/2; s.L.forEach((l, i) => { drawLetter(s, l.ch, x + l.w/2, s.y, i); x += l.w; });
+    label(s, `m = ${s.m}   a = F/m = ${s.lastA.toFixed(1)}`, 10, 22, "#fffb96");
+  },
+  fling(s, dx, dy){ this.push(s, dx*.6, dy*.6); },
+  tap(s){}
+};
+FX.inercia = {nombre:"se desliza sin detenerse (inercia)", hint:"arrastra y suelta para lanzarla; nunca frena",
+  init(s){ s.x = s.W/2; s.y = H/2; s.vx = 1.4; s.vy = .7; s.trail = []; },
+  step(s, dt){
+    s.x += s.vx*dt; s.y += s.vy*dt; const hw = s.total/2 + 2;
+    if (s.x < hw || s.x > s.W - hw) { s.vx = -s.vx; s.x = Math.max(hw, Math.min(s.W - hw, s.x)); }
+    if (s.y < s.fs*.6 || s.y > H - s.fs*.6) { s.vy = -s.vy; s.y = Math.max(s.fs*.6, Math.min(H - s.fs*.6, s.y)); }
+    s.trail.push([s.x, s.y]); if (s.trail.length > 40) s.trail.shift();
+  },
+  draw(s){
+    const c = s.ctx; c.strokeStyle = "rgba(185,103,255,.4)"; c.lineWidth = 1; c.beginPath(); s.trail.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
+    let x = s.x - s.total/2; s.L.forEach((l, i) => { drawLetter(s, l.ch, x + l.w/2, s.y, i); x += l.w; });
+  },
+  fling(s, dx, dy){ s.vx = dx*.05; s.vy = dy*.05; },
+  tap(s){}
+};
+FX.friccion = {nombre:"frena y pierde letras (fricción)", hint:"arrastra a la derecha y suelta para lanzarla",
+  init(s, v){ s.L2 = s.L.slice(); s.x = 14 + s.total/2; s.v = v || 5.2; s.dist = 0; s.lost = []; s.wait = 0; s.y = H - 6 - s.fs*.55; },
+  step(s, dt){
+    if (s.v > 0) {
+      const mv = s.v*dt; s.x += mv; s.dist += mv; s.v = Math.max(0, s.v - .045*dt);
+      if (s.dist > s.fs*2.2 && s.L2.length > 1) {
+        s.dist = 0; const w = s.L2.reduce((a, l) => a + l.w, 0), last = s.L2.pop();
+        s.lost.push({ch:last.ch, x: s.x - w/2 + w - last.w/2, i: s.L2.length, a:1});
+        s.x -= last.w/2;
+      }
+      const w = s.L2.reduce((a, l) => a + l.w, 0); if (s.x > s.W - w/2) { s.x = s.W - w/2; s.v = 0; }
+    } else { s.wait += dt; if (s.wait > 170) this.init(s); }
+    s.lost.forEach(p => { p.a = Math.max(.25, p.a - .004*dt); });
+  },
+  draw(s){
+    floorLine(s);
+    const c = s.ctx; c.strokeStyle = "rgba(255,113,206,.18)"; for (let x = 0; x < s.W; x += 9) { c.beginPath(); c.moveTo(x, H - 6); c.lineTo(x - 5, H - 1); c.stroke(); }
+    s.lost.forEach(p => drawLetter(s, p.ch, p.x, s.y, p.i, 0, p.a));
+    const w = s.L2.reduce((a, l) => a + l.w, 0); let x = s.x - w/2;
+    s.L2.forEach((l, i) => { drawLetter(s, l.ch, x + l.w/2, s.y, i); x += l.w; });
+  },
+  fling(s, dx){ this.init(s, Math.max(1.5, Math.min(9, Math.abs(dx)*.05))); },
+  tap(s){ this.init(s); }
+};
+FX.parabola = {nombre:"es lanzada y escribe su arco (parábola)", hint:"jala hacia atrás y suelta, como una resortera",
+  init(s, vx, vy){
+    s.g = .14; s.ox = 22; s.oy = H - 18;
+    if (vx == null) { const th = 58*Math.PI/180, R = s.W*.78, v0 = Math.sqrt(R*s.g/Math.sin(2*th)); vx = v0*Math.cos(th); vy = -v0*Math.sin(th); }
+    s.x = s.ox; s.y = s.oy; s.vx = vx; s.vy = vy; s.stamps = []; s.acc = 0; s.k = 0; s.fly = true; s.wait = 0; s.aim = null;
+  },
+  step(s, dt){
+    if (!s.fly) { s.wait += dt; if (s.wait > 200) this.init(s); return; }
+    const sub = 3;
+    for (let k = 0; k < sub; k++) {
+      const h = dt/sub, px = s.x, py = s.y;
+      s.vy += s.g*h; s.x += s.vx*h; s.y += s.vy*h;
+      s.acc += Math.hypot(s.x - px, s.y - py);
+      const ch = s.L[s.k % s.n];
+      if (s.acc >= ch.w*1.05) { s.acc = 0; s.stamps.push({ch:ch.ch, i:s.k % s.n, x:s.x, y:s.y, r:Math.atan2(s.vy, s.vx)}); s.k++; }
+      if (s.y > H - 10 || s.x > s.W + 20 || s.x < -20) { s.fly = false; break; }
+    }
+  },
+  draw(s){
+    floorLine(s);
+    s.stamps.forEach(p => drawLetter(s, p.ch, p.x, p.y, p.i, p.r));
+    if (s.fly) { const ch = s.L[s.k % s.n]; drawLetter(s, ch.ch, s.x, s.y, s.k % s.n, Math.atan2(s.vy, s.vx)); }
+    if (s.aim) { const c = s.ctx; c.strokeStyle = "#05ffa1"; c.setLineDash([4, 4]); c.beginPath(); c.moveTo(s.ox, s.oy); c.lineTo(s.ox - s.aim[0], s.oy - s.aim[1]); c.stroke(); c.setLineDash([]); }
+    const c = s.ctx; c.fillStyle = "#01cdfe"; c.fillRect(s.ox - 4, s.oy - 4, 8, 8);
+  },
+  drag(s, x, y, dx, dy){ s.aim = [dx, dy]; },
+  fling(s, dx, dy){ s.aim = null; const k = .055; this.init(s, Math.max(.5, -dx*k), Math.min(-.5, -dy*k)); },
+  tap(s){ this.init(s); }
+};
+FX.pendulo = {nombre:"cuelga y oscila (péndulo)", hint:"arrastra la palabra y suéltala desde otro ángulo",
+  init(s){ s.px = s.W/2; s.py = 10; s.len = H - 50; s.th = .85; s.om = 0; s.hold = false; },
+  step(s, dt){ if (s.hold) return; const sub = 4; for (let k = 0; k < sub; k++) { s.om += -(.3/s.len)*Math.sin(s.th)*(dt/sub)*1.0; s.th += s.om*(dt/sub); } s.om *= Math.pow(.9995, dt); },
+  draw(s){
+    const c = s.ctx, bx = s.px + Math.sin(s.th)*s.len, by = s.py + Math.cos(s.th)*s.len;
+    c.strokeStyle = "rgba(220,203,247,.7)"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(s.px, s.py); c.lineTo(bx, by); c.stroke();
+    c.fillStyle = "#01cdfe"; c.fillRect(s.px - 5, s.py - 4, 10, 6);
+    c.save(); c.translate(bx, by); c.rotate(-s.th);
+    let x = -s.total/2; s.L.forEach((l, i) => { drawLetter(s, l.ch, x + l.w/2, s.fs*.5, i); x += l.w; }); c.restore();
+    label(s, `T = 2π√(L/g)`, 10, 22, "#fffb96");
+  },
+  down(s){ s.hold = true; },
+  drag(s, x, y){ s.th = Math.atan2(x - s.px, y - s.py); s.om = 0; },
+  up(s){ s.hold = false; },
+  fling(){}, tap(){}
+};
+FX.resorte = {nombre:"se estira y regresa (resorte)", hint:"arrastra a los lados para estirarla",
+  init(s){ s.A = s.fs*.9; s.t = 0; s.hold = false; },
+  step(s, dt){ if (s.hold) return; s.t += dt; s.A *= Math.pow(.997, dt); if (s.A < 1.5) { s.A = s.fs*.9; s.t = 0; } },
+  draw(s){
+    const gap = s.hold ? s.A : s.A*Math.cos(s.t*.09);
+    const tot = s.total + gap*(s.n - 1); let x = s.W/2 - tot/2;
+    const c = s.ctx; c.strokeStyle = "rgba(185,103,255,.45)"; c.beginPath(); c.moveTo(8, H/2); c.lineTo(s.W - 8, H/2); c.stroke();
+    s.L.forEach((l, i) => { drawLetter(s, l.ch, x + l.w/2, H/2, i); x += l.w + gap; });
+    label(s, `F = −k·x`, 10, 22, "#fffb96");
+  },
+  down(s){ s.hold = true; s.A = 0; },
+  drag(s, x, y, dx){ s.A = Math.max(-s.fs*.35, Math.min(s.fs*2.2, dx/Math.max(1, s.n - 1))); },
+  up(s){ s.hold = false; s.t = 0; },
+  fling(){}, tap(){}
+};
+FX.onda = {nombre:"ondula sin moverse de lugar (onda)", hint:"arrastra hacia arriba o abajo para cambiar la amplitud",
+  init(s){ s.A = 22; s.t = 0; s.words = Math.max(1, Math.floor((s.W - 20)/(s.total + s.fs))); },
+  step(s, dt){ s.t += dt; },
+  draw(s){
+    const c = s.ctx, k = .045, w = .06;
+    c.strokeStyle = "rgba(185,103,255,.35)"; c.beginPath();
+    for (let x = 0; x <= s.W; x += 4) { const y = H/2 + s.A*Math.sin(k*x - w*s.t); x ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke();
+    let x = (s.W - (s.words*(s.total + s.fs) - s.fs))/2;
+    for (let r = 0; r < s.words; r++) { s.L.forEach((l, i) => { const cx = x + l.w/2; drawLetter(s, l.ch, cx, H/2 + s.A*Math.sin(k*cx - w*s.t), i); x += l.w; }); x += s.fs; }
+  },
+  drag(s, x, y){ s.A = Math.max(0, Math.min(H/2 - 20, Math.abs(y - H/2))); },
+  fling(){}, tap(){}
+};
+FX.refraccion = {nombre:"se dobla al entrar al agua (refracción)", hint:"toca para repetir",
+  init(s){
+    s.wy = H*.52; const th = 38*Math.PI/180, v = 1.5;
+    s.P = layoutWord(s, 10 + s.total/2, 22).map(p => ({...p, vx: Math.sin(th)*v, vy: Math.cos(th)*v, wet:false}));
+  },
+  step(s, dt){
+    let alive = false;
+    for (const p of s.P) {
+      p.x += p.vx*dt; p.y += p.vy*dt;
+      if (!p.wet && p.y >= s.wy) { p.wet = true; const v = Math.hypot(p.vx, p.vy), s1 = p.vx/v, s2 = s1/1.33, v2 = v/1.33; p.vx = s2*v2; p.vy = Math.sqrt(1 - s2*s2)*v2; }
+      if (p.y < H + 20 && p.x < s.W + 20) alive = true;
+    }
+    if (!alive) this.init(s);
+  },
+  draw(s){
+    const c = s.ctx; c.fillStyle = "rgba(1,205,254,.14)"; c.fillRect(0, s.wy, s.W, H - s.wy);
+    c.strokeStyle = "rgba(1,205,254,.6)"; c.beginPath(); c.moveTo(0, s.wy); c.lineTo(s.W, s.wy); c.stroke();
+    label(s, "aire  n₁ = 1", s.W - 120, s.wy - 8); label(s, "agua  n₂ = 1.33", s.W - 140, s.wy + 18, "#01cdfe");
+    s.P.forEach((p, i) => drawLetter(s, p.ch, p.x, p.y, i));
+  },
+  tap(s){ this.init(s); }
+};
+FX.orbita = {nombre:"gira alrededor de un centro (órbita)", hint:"toca para soltarla de nuevo",
+  init(s){
+    s.cx = s.W/2; s.cy = H/2; const rmin = 22, rmax = Math.min(s.W/2, H/2) - 8;
+    const n = s.n; s.GM = Math.pow(TAU*rmin/170, 2)*rmin;
+    s.P = s.L.map((l, i) => { const r = rmin + (rmax - rmin)*(n > 1 ? i/(n - 1) : 0), v = Math.sqrt(s.GM/r); return {ch:l.ch, x:s.cx + r, y:s.cy, vx:0, vy:-v, i}; });
+    s.t = 0;
+  },
+  step(s, dt){
+    const sub = 4;
+    for (let k = 0; k < sub; k++) for (const p of s.P) {
+      const dx = s.cx - p.x, dy = s.cy - p.y, r = Math.hypot(dx, dy), a = s.GM/(r*r);
+      p.vx += a*dx/r*dt/sub; p.vy += a*dy/r*dt/sub; p.x += p.vx*dt/sub; p.y += p.vy*dt/sub;
+    }
+    s.t += dt; if (s.t > 1400) this.init(s);
+  },
+  draw(s){
+    const c = s.ctx; c.fillStyle = "#01cdfe"; c.beginPath(); c.arc(s.cx, s.cy, 6, 0, TAU); c.fill();
+    s.P.forEach(p => drawLetter(s, p.ch, p.x, p.y, p.i, Math.atan2(p.vy, p.vx)));
+  },
+  tap(s){ this.init(s); }
+};
+FX.entropia = {nombre:"se desordena (entropía)", hint:"toca para ordenarla de nuevo",
+  init(s){ s.P = layoutWord(s, s.W/2, H/2); s.t = 0; },
+  step(s, dt){
+    for (const p of s.P) { p.x += (Math.random() - .5)*2.2*dt; p.y += (Math.random() - .5)*2.2*dt; p.x = Math.max(8, Math.min(s.W - 8, p.x)); p.y = Math.max(14, Math.min(H - 10, p.y)); }
+    s.t += dt; if (s.t > 1100) this.init(s);
+  },
+  draw(s){
+    s.P.forEach((p, i) => { const c = s.ctx; c.strokeStyle = "rgba(185,103,255,.18)"; c.beginPath(); c.moveTo(p.x0, p.y0); c.lineTo(p.x, p.y); c.stroke(); drawLetter(s, p.ch, p.x, p.y, i); });
+    label(s, "S = k ln W", 10, 22, "#fffb96");
+  },
+  tap(s){ this.init(s); }
+};
+const FX_ORDER = ["gravedad","masa","fuerza","inercia","friccion","parabola","pendulo","resorte","onda","refraccion","orbita","entropia"];
+
+/* ---------- escenario ---------- */
+let speed = .6, paused = reduced;
+class Stage {
+  constructor(canvas, word, fx){
+    this.cv = canvas; this.ctx = canvas.getContext("2d"); this.visible = true;
+    this.setWord(word, fx);
+    let start = null, last = null;
+    canvas.addEventListener("pointerdown", e => { canvas.setPointerCapture(e.pointerId); start = this.pt(e); last = start; this.fx.down && this.fx.down(this, ...start); });
+    canvas.addEventListener("pointermove", e => { if (!start) return; last = this.pt(e); this.fx.drag && this.fx.drag(this, last[0], last[1], last[0] - start[0], last[1] - start[1]); if (paused) this.render(); });
+    const end = () => { if (!start) return; const dx = last[0] - start[0], dy = last[1] - start[1]; this.fx.up && this.fx.up(this);
+      if (Math.hypot(dx, dy) < 6) this.fx.tap && this.fx.tap(this); else this.fx.fling && this.fx.fling(this, dx, dy); start = null; if (paused) this.render(); };
+    canvas.addEventListener("pointerup", end); canvas.addEventListener("pointercancel", () => { this.fx.up && this.fx.up(this); start = null; });
+    canvas.tabIndex = 0;
+    canvas.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); this.fx.tap && this.fx.tap(this); if (this.fx.fling) this.fx.fling(this, 140, -110); if (paused) this.render(); } });
+  }
+  pt(e){ const r = this.cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  setWord(word, fxName){
+    this.word = (word || "palabra").toLowerCase(); this.fxName = FX[fxName] ? fxName : "gravedad"; this.fx = FX[this.fxName];
+    this.cv.setAttribute("aria-label", `La palabra ${this.word}: ${this.fx.nombre}. ${this.fx.hint}.`);
+    this.resize(true);
+  }
+  resize(force){
+    const W = this.cv.clientWidth || 400, dpr = window.devicePixelRatio || 1;
+    if (!force && W === this.W) return;
+    this.W = W; this.cv.width = Math.round(W*dpr); this.cv.height = Math.round(H*dpr); this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    let fs = 28; const font = f => `${f}px "Rubik Mono One", "Arial Black", sans-serif`;
+    this.ctx.font = font(fs); let tw = this.ctx.measureText(this.word).width;
+    const maxW = this.fxName === "orbita" ? W*.9 : W*.72;
+    if (tw > maxW) { fs = Math.max(12, Math.floor(fs*maxW/tw)); this.ctx.font = font(fs); }
+    this.fs = fs; this.font = font(fs);
+    this.L = [...this.word].map(ch => ({ch, w: this.ctx.measureText(ch).width || fs*.5}));
+    this.total = this.L.reduce((a, l) => a + l.w, 0); this.n = this.L.length;
+    this.fx.init(this); this.render();
+  }
+  step(){ this.fx.step(this, speed); }
+  render(){
+    const c = this.ctx; c.fillStyle = "#120328"; c.fillRect(0, 0, this.W, H);
+    c.font = this.font; c.textAlign = "center"; c.textBaseline = "middle";
+    this.fx.draw(this);
+    c.font = this.font; c.textAlign = "center"; c.textBaseline = "middle";
+  }
+}
+
+/* ---------- datos ---------- */
+let group = [], localOnly = [], db = null, user = null, me = null, canEdit = false, dbFailed = false;
+const stages = new Map();
+const io = new IntersectionObserver(es => es.forEach(e => { const s = stages.get(e.target.dataset.key); if (s) s.visible = e.isIntersecting; }), {rootMargin: "100px"});
+function clean(e){
+  const str = (v, n) => typeof v === "string" ? v.slice(0, n) : "";
+  return {palabra: str(e.palabra, 18).trim(), fisica: str(e.fisica, 240), formula: str(e.formula, 80), poetica: str(e.poetica, 240), efecto: FX[e.efecto] ? e.efecto : "gravedad", firma: str(e.firma, 40), autor: str(e.autor, 200)};
+}
+function allEntries(){
+  const b = BASE.map(e => ({...e, key: "base-" + e.palabra}));
+  const g = group.map(e => ({...clean(e), key: "g-" + e.id, id: e.id, grupo: true}));
+  const l = localOnly.map(e => ({...e, grupo: true, local: true}));
+  return [...b, ...g, ...l].filter(e => e.palabra).sort((a, b2) => a.palabra.localeCompare(b2.palabra, "es", {sensitivity: "base"}));
+}
+const massOf = w => [...w].filter(c => c !== " ").length;
+function initial(w){ return w.normalize("NFD").replace(/[̀-ͯ]/g, "")[0].toUpperCase(); }
+
+function makeCard(e){
+  const a = document.createElement("article"); a.className = "entry"; a.dataset.key = e.key;
+  a.id = "e-" + e.key.replace(/[^a-z0-9-]/gi, "");
+  const head = document.createElement("div"); head.className = "head";
+  const h = document.createElement("h3"); h.textContent = e.palabra.toUpperCase();
+  const m = document.createElement("span"); m.className = "mass"; m.textContent = `m = ${massOf(e.palabra)}`;
+  head.append(h, m);
+  const f = document.createElement("div"); f.className = "formula"; f.textContent = e.formula || "";
+  const dl = document.createElement("dl");
+  [["Física", e.fisica, ""], ["Poema", e.poetica, "poe"]].forEach(([t, d, cls]) => { if (!d) return; const dt = document.createElement("dt"); dt.textContent = t; const dd = document.createElement("dd"); dd.textContent = d; if (cls) dd.className = cls; dl.append(dt, dd); });
+  const st = document.createElement("div"); st.className = "stage"; const cv = document.createElement("canvas"); st.appendChild(cv);
+  const foot = document.createElement("div"); foot.className = "foot";
+  const hint = document.createElement("span"); hint.className = "hint"; hint.textContent = FX[e.efecto].hint;
+  const meta = document.createElement("span");
+  if (e.grupo) {
+    meta.innerHTML = '<span class="tag"></span>'; meta.firstChild.textContent = (e.local ? "solo en esta pantalla" : "entrada del grupo") + (e.firma ? " · " + e.firma : "");
+    if (!e.local && (canEdit || (me && e.autor === me))) { const del = document.createElement("button"); del.textContent = "borrar"; del.addEventListener("click", () => removeEntry(e, del)); meta.append(" · ", del); }
+    if (e.local) { const del = document.createElement("button"); del.textContent = "quitar"; del.addEventListener("click", () => { localOnly = localOnly.filter(x => x.key !== e.key); render(); }); meta.append(" · ", del); }
+  }
+  foot.append(hint, meta);
+  a.append(head, f, dl, st, foot);
+  return {el: a, cv};
+}
+let lastSig = "";
+function render(){
+  const q = $("q").value.trim().toLowerCase();
+  const list = allEntries();
+  const sig = JSON.stringify(list.map(e => [e.key, e.palabra, e.fisica, e.formula, e.poetica, e.efecto, e.firma])) + canEdit + me;
+  const grid = $("grid");
+  if (sig !== lastSig) {
+    lastSig = sig;
+    io.disconnect();
+    grid.innerHTML = ""; stages.clear();
+    list.forEach(e => { const {el, cv} = makeCard(e); grid.appendChild(el); const s = new Stage(cv, e.palabra, e.efecto); stages.set(e.key, s); io.observe(el); });
+    const letters = [...new Set(list.map(e => initial(e.palabra)))];
+    $("index").innerHTML = "";
+    letters.forEach(L => { const first = list.find(e => initial(e.palabra) === L); const a = document.createElement("a"); a.href = "#"; a.textContent = L; a.addEventListener("click", ev => { ev.preventDefault(); $("q").value = ""; filter(); document.querySelector(`[data-key="${CSS.escape(first.key)}"]`).scrollIntoView({behavior: reduced ? "auto" : "smooth", block: "start"}); }); $("index").appendChild(a); });
+  }
+  filter();
+}
+function filter(){
+  const q = $("q").value.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  let shown = 0;
+  $("grid").querySelectorAll(".entry").forEach(el => { const txt = el.textContent.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); const ok = !q || txt.includes(q); el.hidden = !ok; if (ok) shown++; });
+  $("none").hidden = shown > 0;
+}
+$("q").addEventListener("input", filter);
+
+/* ---------- formulario y vista previa ---------- */
+const sel = $("f-fx");
+FX_ORDER.forEach(k => { const o = document.createElement("option"); o.value = k; o.textContent = FX[k].nombre; sel.appendChild(o); });
+let preview = null, previewCard = null;
+function readForm(){ return {palabra: $("f-word").value.trim(), fisica: $("f-phys").value.trim(), formula: $("f-form").value.trim(), poetica: $("f-poe").value.trim(), efecto: sel.value, firma: $("f-sign").value.trim()}; }
+function updatePreview(){
+  const e = readForm(); const shown = {...e, palabra: e.palabra || "presión", fisica: e.fisica || "Lo que escribas aquí aparecerá en la ficha.", poetica: e.poetica || "Y aquí, tu definición poética.", key: "preview", grupo: false};
+  const slot = $("preview-slot");
+  const {el, cv} = makeCard(shown); el.setAttribute("aria-label", "Vista previa de tu entrada");
+  if (preview && previewCard && preview.word === shown.palabra.toLowerCase() && preview.fxName === shown.efecto) {
+    previewCard.querySelector(".formula").textContent = shown.formula; const dds = previewCard.querySelectorAll("dd"); dds[0].textContent = shown.fisica; dds[1].textContent = shown.poetica;
+    previewCard.querySelector(".mass").textContent = `m = ${massOf(shown.palabra)}`;
+    return;
+  }
+  slot.innerHTML = '<div style="font-size:1.1rem;margin-bottom:6px">Vista previa</div>'; slot.appendChild(el); previewCard = el;
+  preview = new Stage(cv, shown.palabra, shown.efecto);
+}
+let pT; ["f-word","f-phys","f-form","f-poe","f-sign"].forEach(id => $(id).addEventListener("input", () => { clearTimeout(pT); pT = setTimeout(updatePreview, 200); }));
+sel.addEventListener("change", updatePreview);
+
+function msg(t, ok){ const m = $("f-msg"); m.textContent = t; m.className = "msg" + (ok ? " ok" : ""); }
+$("form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const e = readForm();
+  if (!e.palabra) { msg("Escribe la palabra que vas a definir."); $("f-word").focus(); return; }
+  if (!e.fisica && !e.poetica) { msg("Escribe al menos una de las dos definiciones."); return; }
+  const doc = {...e, autor: me || "", creado: Date.now()};
+  if (db && !dbFailed) {
+    try { await db.collection("entradas").add(doc); msg(`«${e.palabra}» ya está en el diccionario del grupo.`, true); clearForm(); }
+    catch (err) {
+      if (err && err.code === "invalid_argument") { dbFailed = true; localOnly.push({...doc, key: "l-" + Date.now()}); render(); msg("Tu acceso no permite guardar en el diccionario compartido: la entrada solo se verá en esta pantalla. Pide a tu profesor acceso de Colaborador."); clearForm(); }
+      else if (err && err.code === "quota_exceeded") msg("El diccionario está lleno: hay que borrar algunas entradas antes de agregar más.");
+      else msg("No se pudo guardar en este momento. Intenta de nuevo en unos segundos.");
+    }
+  } else {
+    localOnly.push({...doc, key: "l-" + Date.now()}); render();
+    msg("Agregada. Esta entrada solo se verá en esta pantalla, porque aquí no hay diccionario compartido.", true); clearForm();
+  }
+});
+function clearForm(){ ["f-word","f-phys","f-form","f-poe"].forEach(id => $(id).value = ""); updatePreview(); }
+async function removeEntry(e, btn){
+  if (btn.dataset.armed !== "1") { btn.dataset.armed = "1"; btn.textContent = "¿borrar de verdad?"; setTimeout(() => { btn.dataset.armed = ""; btn.textContent = "borrar"; }, 4000); return; }
+  try { await db.doc("entradas/" + e.id).delete(); } catch (err) { btn.textContent = "no se pudo borrar"; }
+}
+
+/* ---------- controles globales ---------- */
+$("speed").addEventListener("input", e => { speed = +e.target.value; $("speed-v").textContent = speed.toFixed(2).replace(/0$/, "") + "×"; });
+function setPause(p){ paused = p; $("pause").textContent = p ? "Seguir" : "Pausa"; $("pause").setAttribute("aria-pressed", p); }
+$("pause").addEventListener("click", () => setPause(!paused));
+setPause(paused);
+
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { stages.forEach(s => s.resize()); preview && preview.resize(); }, 150); });
+function loop(){
+  if (!document.hidden) {
+    stages.forEach(s => { if (!s.visible) return; if (!paused) s.step(); s.render(); });
+    if (preview) { if (!paused) preview.step(); preview.render(); }
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- arranque ---------- */
+render(); updatePreview();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { stages.forEach(s => s.resize(true)); preview && preview.resize(true); });
+requestAnimationFrame(loop);
+
+(async () => {
+  try {
+    if (!window.claude || !window.claude.use) return;
+    user = await window.claude.use("user");
+    if (user) { try { me = await user.id(); } catch (e) {} try { canEdit = !!(await user.canEdit()); } catch (e) {} }
+    db = await window.claude.use("db");
+    if (!db) return;
+    db.collection("entradas").onSnapshot(snap => { group = snap.docs.map(d => ({...d.data(), id: d.id})); render(); }, () => {});
+  } catch (e) {}
+})();
+})();
+</script>
+
+</body></html>

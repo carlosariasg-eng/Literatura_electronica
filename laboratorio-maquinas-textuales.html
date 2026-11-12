@@ -1,0 +1,1889 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Laboratorio de máquinas textuales</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Spectral:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* Banco de laboratorio: ficha teórica arriba, corpus y código en dos columnas, salida a lo ancho. */
+:root{
+  --paper:#e6e7ea; --surface:#fcfcfd; --surface-2:#f1f2f5;
+  --ink:#14161b; --muted:#5b6069; --rule:#c6cad1;
+  --accent:#1c33bd; --accent-soft:#e0e4fb;
+  --f1:#1c33bd; --f2:#1d6b4f; --f3:#a8371e;
+  --display:'Archivo Black','Arial Black',sans-serif;
+  --body:'Spectral',Georgia,'Times New Roman',serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#101216; --surface:#181a20; --surface-2:#1f222a;
+    --ink:#e8e9ec; --muted:#979da7; --rule:#2d313a;
+    --accent:#93a6ff; --accent-soft:#1c2340;
+    --f1:#93a6ff; --f2:#6fc49a; --f3:#f08a6b;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#101216; --surface:#181a20; --surface-2:#1f222a;
+  --ink:#e8e9ec; --muted:#979da7; --rule:#2d313a;
+  --accent:#93a6ff; --accent-soft:#1c2340;
+  --f1:#93a6ff; --f2:#6fc49a; --f3:#f08a6b;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:20;background:var(--surface)}
+.wrap{max-width:1140px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;letter-spacing:-.01em;line-height:1.08;margin:0}
+p{margin:0}
+a{color:var(--accent)}
+.lab{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* ---- cabecera ---- */
+.hero{background:var(--surface);border-bottom:1px solid var(--rule)}
+.hero .wrap{padding-block:clamp(40px,7vw,76px);display:grid;gap:22px}
+.hero h1{font-size:clamp(34px,6.6vw,62px)}
+.hero .sub{font-size:clamp(17px,2vw,20px);max-width:62ch;color:var(--muted)}
+.hero .sub b{color:var(--ink);font-weight:600}
+.epi{border-left:3px solid var(--accent);padding:4px 0 4px 16px;max-width:60ch;font-style:italic;font-size:16px}
+.epi span{display:block;font-style:normal;font-size:12px;font-family:var(--mono);letter-spacing:.06em;color:var(--muted);margin-top:8px}
+
+/* ---- navegación ---- */
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:19;background:var(--surface);border-bottom:1px solid var(--rule)}
+nav .wrap{padding-block:9px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin}
+nav a{flex:0 0 auto;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-decoration:none;color:var(--muted);border:1px solid var(--rule);border-radius:2px;padding:5px 9px;white-space:nowrap}
+nav a:hover,nav a:focus-visible{color:var(--ink);border-color:var(--accent)}
+nav a b{color:var(--accent);font-weight:700}
+
+/* ---- máquinas ---- */
+main .wrap{padding-block:0}
+.maq{border-bottom:1px solid var(--rule);padding-block:clamp(36px,5.5vw,60px);display:grid;gap:22px}
+.mh{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+.num{font-family:var(--display);font-size:clamp(38px,7vw,64px);line-height:.82;color:var(--accent);font-variant-numeric:tabular-nums}
+.mh h2{font-size:clamp(25px,3.6vw,38px)}
+.meta{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.ficha{max-width:68ch;display:grid;gap:12px;font-size:16.5px}
+.ficha .term{font-weight:600}
+.banco{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:14px}
+@media (max-width:860px){.banco{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:3px;min-width:0;display:flex;flex-direction:column}
+.ptit{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:9px 13px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pbody{padding:13px;display:grid;gap:11px;min-width:0}
+label.campo{display:grid;gap:5px;font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);min-width:0}
+textarea,input[type=number],select{font-family:var(--mono);font-size:13px;line-height:1.55;color:var(--ink);background:var(--surface-2);border:1px solid var(--rule);border-radius:2px;padding:8px 9px;width:100%;min-width:0;resize:vertical}
+textarea{min-height:92px}
+.cod textarea{min-height:270px;font-size:12.2px;line-height:1.5;tab-size:2}
+input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.fila{display:flex;gap:11px;flex-wrap:wrap}
+.fila label.campo{flex:1 1 130px}
+.check{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+.check input{accent-color:var(--accent);width:15px;height:15px}
+button{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:1px solid var(--ink);border-radius:2px;padding:8px 14px;cursor:pointer}
+button:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+button.ghost{background:transparent;color:var(--muted);border-color:var(--rule)}
+button.ghost:hover{color:var(--ink);border-color:var(--accent);background:transparent}
+.salida{background:var(--surface);border:1px solid var(--rule);border-radius:3px}
+.salida pre{margin:0;padding:15px 16px;font-family:var(--mono);font-size:13.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;min-height:120px}
+.salida pre.verso{font-family:var(--body);font-size:16.5px;line-height:1.85;font-style:italic}
+.f1{color:var(--f1);font-weight:700}.f2{color:var(--f2);font-weight:700}.f3{color:var(--f3);font-weight:700}
+.pie{display:grid;gap:9px;max-width:72ch;border-top:1px dashed var(--rule);padding-top:15px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);padding:3px 8px;border-radius:2px}
+.preg{font-size:16px}
+.preg b{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:3px;font-weight:400}
+.aviso{font-family:var(--mono);font-size:11px;color:var(--f3);line-height:1.5}
+.cuenta{font-family:var(--mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rejilla14{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:7px}
+.rejilla14 label{display:grid;gap:3px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rejilla14 select{padding:5px 6px;font-size:11.5px}
+footer{background:var(--surface);border-top:1px solid var(--rule)}
+footer .wrap{padding-block:clamp(36px,6vw,62px);display:grid;gap:26px}
+footer h2{font-size:clamp(23px,3.4vw,32px)}
+.ejer{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:18px}
+.ejer article{display:grid;gap:7px;align-content:start}
+.ejer h3{font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.ejer p{font-size:16px;color:var(--ink)}
+.fuentes{font-size:14.5px;color:var(--muted);max-width:74ch;display:grid;gap:5px}
+.fuentes b{color:var(--ink);font-weight:600}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---- sala 2: imagen, sonido, figura ---- */
+.sala{border-bottom:1px solid var(--rule);padding-block:clamp(32px,5vw,50px);display:grid;gap:12px}
+.sala h2{font-size:clamp(27px,4.3vw,40px)}
+.sala p.intro{max-width:70ch;font-size:17px;color:var(--muted)}
+.navsala{flex:0 0 auto;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--accent);align-self:center;padding:0 4px;text-transform:uppercase}
+.lienzo{padding:14px;display:grid;place-items:center;min-height:190px;overflow:hidden}
+.lienzo svg{width:100%;height:auto;color:var(--ink);display:block}
+.lienzo canvas{max-width:100%;height:auto;display:block;image-rendering:auto}
+.cinetica{width:100%;min-height:230px;background:#0c0c0e;display:grid;place-items:center;padding:24px;text-align:center}
+.cinetica span{font-family:var(--body);font-weight:600;line-height:1.05;color:#f2f2f4;word-break:break-word}
+.partitura{display:flex;flex-wrap:wrap;gap:2px;font-family:var(--mono);font-size:clamp(18px,3.4vw,26px);line-height:1.5;justify-content:center}
+.partitura span{padding:1px 3px;border-radius:2px;transition:background .06s linear}
+.partitura span.activa{background:var(--accent);color:#fff}
+.fugitivas{position:relative;width:100%;min-height:210px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;padding:18px;cursor:crosshair;touch-action:none}
+.fugitivas span{display:inline-block;font-family:var(--body);font-size:clamp(26px,5.4vw,46px);will-change:transform}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=file]{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface-2);border:1px solid var(--rule);border-radius:2px;padding:7px}
+input[type=color]{width:100%;height:34px;padding:2px;background:var(--surface-2);border:1px solid var(--rule);border-radius:2px}
+
+/* ---- ficha de lógica y cuadro comparativo ---- */
+.logica{background:var(--surface);border:1px solid var(--rule);border-radius:3px;display:grid;gap:0}
+.logica .pasos{padding:14px 16px;border-bottom:1px solid var(--rule)}
+.logica ol{margin:7px 0 0;padding-left:20px;display:grid;gap:4px;font-size:15.5px;line-height:1.5}
+.logica ol li::marker{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.tres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:760px){.tres{grid-template-columns:1fr}}
+.tres>div{padding:13px 16px;border-right:1px solid var(--rule);min-width:0}
+.tres>div:last-child{border-right:0}
+@media (max-width:760px){.tres>div{border-right:0;border-bottom:1px solid var(--rule)}.tres>div:last-child{border-bottom:0}}
+.rotulo{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.tres p{font-size:15px;line-height:1.5}
+.tres .nulo{color:var(--muted)}
+.cuadro{border-bottom:1px solid var(--rule);padding-block:clamp(32px,5vw,50px);display:grid;gap:16px}
+.cuadro h2{font-size:clamp(25px,3.8vw,36px)}
+.grupo{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:18px;padding:16px 0;border-top:1px solid var(--rule)}
+@media (max-width:720px){.grupo{grid-template-columns:1fr;gap:8px}}
+.grupo h3{font-size:17px;margin:0 0 5px;font-family:var(--body);font-weight:600}
+.grupo .def{font-size:14.5px;color:var(--muted);line-height:1.5}
+.grupo ul{margin:0;padding:0;list-style:none;display:grid;gap:9px}
+.grupo li{display:grid;grid-template-columns:30px 1fr;gap:10px;font-size:15px;line-height:1.5}
+.grupo li b{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;padding-top:2px}
+.grupo li i{font-style:normal;color:var(--muted)}
+</style>
+
+<header class="hero"><div class="wrap">
+  <p class="lab">Literatura electrónica · Seminario · Quince dispositivos ejecutables</p>
+  <h1>Laboratorio de máquinas textuales</h1>
+  <p class="sub">Quince procedimientos descritos por Belén Gache, reconstruidos como máquinas que funcionan. Siete combinan texto; ocho trabajan con imagen, sonido y figura. Cada una muestra su corpus, su <b>algoritmo editable</b> y lo que produce. Modifica el código, vuelve a ejecutar y observa qué cambia en la salida.</p>
+  <div class="epi">Para comprender e interpretar una pieza de e-literatura hace falta leer tanto sus palabras, imágenes y sonidos como sus algoritmos y códigos.<span>Belén Gache, «Breve historia de la literatura electrónica» — el principio del doble estatuto</span></div>
+</div></header>
+
+<nav><div class="wrap" id="nav"></div></nav>
+<main><div class="wrap" id="maquinas"></div></main>
+
+<footer><div class="wrap">
+  <p class="lab">Protocolo</p>
+  <h2>Qué hacer con las máquinas</h2>
+  <div class="ejer">
+    <article><h3>01 · Azar contra regla</h3><p>Ejecuta la receta dadá y los textos estocásticos con el mismo vocabulario. Describe en qué nivel interviene el azar en cada una: Tzara lo aplica al orden de las palabras, Lutz lo aplica a la selección dentro de una estructura sintáctica fija. Argumenta cuál de las dos salidas resulta más legible y por qué.</p></article>
+    <article><h3>02 · Escribir una restricción</h3><p>Edita el código de cualquier máquina e introduce una contrainte propia: prohibir la repetición de una palabra, exigir una longitud métrica, forzar la aliteración. Documenta la regla, el fragmento de código que la implementa y tres salidas antes y después.</p></article>
+    <article><h3>03 · El caso Balestrini</h3><p>Ejecuta Tape Mark 1 con la restricción activada y desactivada, diez veces cada una. La regla que impide fragmentos contiguos de la misma fuente es lo que convierte una mezcla en un montaje. Explica qué hace esa regla con la ilusión de continuidad del texto.</p></article>
+    <article><h3>04 · ¿Quién firma?</h3><p>Toma una salida que te parezca lograda y responde por escrito: ¿la escribió el programador, el algoritmo, el autor del corpus o el lector que la seleccionó entre cientos de tiradas? Sostén la respuesta con la discusión sobre descentramiento y muerte del autor que Gache retoma de Barthes y Derrida.</p></article>
+    <article><h3>05 · Meta-escritura</h3><p>En la poesía generativa la acción del autor se registra en el nivel de la meta-escritura. Reescribe el código de una máquina de modo que la salida hable de su propio procedimiento. Evalúa si la pieza resultante gana o pierde al volverse autorreferente.</p></article>
+    <article><h3>06 · Del corpus al archivo</h3><p>Sustituye los corpus de ejemplo por textos de tu propio archivo (notas de campo, correos, actas, una tesis). Analiza qué aporta el material de origen a la salida y cuánto del resultado depende del procedimiento y cuánto del texto que se le da de comer.</p></article>
+    <article><h3>07 · Del signo al cuerpo</h3><p>Compón el mismo texto como carmina figurata y como constelación concreta. Describe qué aporta la figura al sentido en cada caso y confronta el resultado con la tesis de Gache sobre la materialidad recuperada desde Mallarmé y las vanguardias.</p></article>
+    <article><h3>08 · Verbovocovisualidad</h3><p>Haz sonar un mismo texto con la escala pentatónica y con la cromática, y observa las letras que se encienden. Argumenta si el resultado sostiene la afirmación de Joyce que Gache cita en el cierre, o si la correspondencia entre letra y tono es una convención arbitraria del programador.</p></article>
+    <article><h3>09 · El píxel como significante</h3><p>Pasa una misma imagen por el tramado tipográfico y por la alteración de parámetros. Siguiendo a Beiguelman, escribe qué queda de la evidencia documental de esa imagen cuando se manipulan el píxel, la descomposición del color y el barrido de pantalla.</p></article>
+  </div>
+  <div class="fuentes">
+    <p><b>Procedencia de los procedimientos.</b> Las máquinas de la primera sala reconstruyen dispositivos descritos en Belén Gache, «Breve historia de la literatura electrónica» (s/f): la receta dadá de Tristan Tzara (ca. 1920); el cut-up de William Burroughs y Brion Gysin (fines de los años cincuenta); los <i>Textos estocásticos</i> de Theo Lutz, programados en la Escuela Politécnica de Stuttgart a propuesta de Max Bense y publicados en <i>Augenblick</i> en 1959; <i>Cent mille milliards de poèmes</i> de Raymond Queneau (Oulipo, 1961); <i>Tape Mark 1</i> de Nanni Balestrini, compuesta con un IBM 7070 y publicada en el Almanaque Literario Bompiani en 1962; y los twitterbots <i>Two Headlines</i> y <i>Magic Realism Bot</i>.</p>
+    <p><b>Corpus.</b> Todos los textos de ejemplo cargados en las máquinas son originales, escritos para este laboratorio. Los titulares son ficticios. Las diez series de versos del generador de sonetos también lo son: no reproducen los sonetos de Queneau, sino que replican su mecanismo con material propio en endecasílabos castellanos.</p>
+    <p><b>Nota técnica.</b> Cada máquina ejecuta exactamente el código que se muestra en su panel. Si tu navegador bloquea la compilación en caliente, los paneles de código quedan en modo lectura y las máquinas siguen funcionando con su versión original.</p>
+  </div>
+</div></footer>
+
+<script type="text/plain" id="cod-m1">
+function generar(P) {
+  // 1. Tomar un diario.
+  let palabras = P.diario.split(/\s+/).filter(Boolean);
+
+  // 2. Tomar unas tijeras: recortar cada palabra del artículo.
+  if (P.limpiar) palabras = palabras.map(function (w) {
+    return w.replace(/[.,;:()«»"¡!¿?—]/g, '');
+  }).filter(Boolean);
+
+  // 3. Meterlas en una bolsa y agitarla (Fisher-Yates).
+  for (let i = palabras.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = palabras[i]; palabras[i] = palabras[j]; palabras[j] = t;
+  }
+
+  // 4. Sacarlas una a una, en el orden en que vayan saliendo.
+  const poema = palabras.slice(0, Math.min(P.extension, palabras.length));
+
+  // 5. Copiarlas en una hoja.
+  const versos = [];
+  for (let i = 0; i < poema.length; i += P.porVerso) {
+    versos.push(poema.slice(i, i + P.porVerso).join(' '));
+  }
+  return versos.join('\n');
+}
+</script>
+
+<script type="text/plain" id="cod-m2">
+function generar(P) {
+  const cortar = function (t) { return t.split(/\s+/).filter(Boolean); };
+  const A = cortar(P.textoA), B = cortar(P.textoB);
+
+  // Cada texto se corta en bloques del mismo tamaño.
+  const bloques = [];
+  const largo = Math.max(A.length, B.length);
+  for (let i = 0; i < largo; i += P.bloque) {
+    const a = A.slice(i, i + P.bloque);
+    const b = B.slice(i, i + P.bloque);
+    if (a.length) bloques.push(a.join(' '));
+    if (b.length) bloques.push(b.join(' '));
+  }
+
+  // Yuxtaposición: alternada, o reensamblada al azar.
+  if (P.azar) {
+    for (let i = bloques.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = bloques[i]; bloques[i] = bloques[j]; bloques[j] = t;
+    }
+  }
+
+  const versos = [];
+  for (let i = 0; i < bloques.length; i += P.porVerso) {
+    versos.push(bloques.slice(i, i + P.porVerso).join(' '));
+  }
+  return versos.join('\n');
+}
+</script>
+
+<script type="text/plain" id="cod-m3">
+function generar(P) {
+  const lista = function (s) {
+    return s.split(/[,\n]/).map(function (x) { return x.trim(); }).filter(Boolean);
+  };
+  const elegir = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+
+  const SUS = lista(P.sustantivos);
+  const ADJ = lista(P.adjetivos);
+  const CON = lista(P.conectores);          // conectores lógicos
+  const CUA = lista(P.cuantificadores);     // operadores de cuantificación
+
+  // Estructura fija: cuantificador + sujeto + cópula + predicado.
+  const proposicion = function () {
+    return elegir(CUA) + ' ' + elegir(SUS) + ' ES ' + elegir(ADJ);
+  };
+
+  const lineas = [];
+  for (let i = 0; i < P.lineas; i++) {
+    lineas.push(proposicion() + ' ' + elegir(CON) + ' ' + proposicion() + '.');
+  }
+  return lineas.join('\n');
+}
+</script>
+
+<script type="text/plain" id="cod-m4">
+function generar(P) {
+  // P.versos[v] contiene las 10 variantes del verso v (14 posiciones).
+  // P.fijos[v] es el número de soneto elegido, o null si va al azar.
+  const elegidos = [];
+  for (let v = 0; v < 14; v++) {
+    elegidos.push(P.fijos[v] === null
+      ? Math.floor(Math.random() * 10)
+      : P.fijos[v]);
+  }
+
+  const versos = elegidos.map(function (s, v) { return P.versos[v][s]; });
+
+  // Dos cuartetos y dos tercetos: ABBA ABBA CCD EDE.
+  const estrofas = [
+    versos.slice(0, 4),
+    versos.slice(4, 8),
+    versos.slice(8, 11),
+    versos.slice(11, 14)
+  ];
+
+  const cifra = elegidos.map(function (n) { return n + 1; }).join('-');
+  return estrofas.map(function (e) { return e.join('\n'); }).join('\n\n')
+    + '\n\n— combinación ' + cifra + ' de 100 000 000 000 000';
+}
+</script>
+
+<script type="text/plain" id="cod-m5">
+function generar(P) {
+  // Cada fuente aporta sus fragmentos; se conserva la marca de origen.
+  const frag = [];
+  P.fuentes.forEach(function (texto, i) {
+    texto.split(/\n+/).map(function (s) { return s.trim(); })
+      .filter(Boolean)
+      .forEach(function (t) { frag.push({ t: t, f: i }); });
+  });
+
+  // Permutación con restricción: dos fragmentos contiguos
+  // no pueden proceder de la misma fuente.
+  const quedan = frag.slice();
+  const salida = [];
+  while (quedan.length) {
+    const ultimo = salida.length ? salida[salida.length - 1].f : -1;
+    let cand = P.restriccion
+      ? quedan.filter(function (x) { return x.f !== ultimo; })
+      : quedan;
+    if (!cand.length) cand = quedan;
+    const el = cand[Math.floor(Math.random() * cand.length)];
+    salida.push(el);
+    quedan.splice(quedan.indexOf(el), 1);
+  }
+
+  const versos = [];
+  for (let i = 0; i < salida.length; i += P.porVerso) {
+    versos.push(salida.slice(i, i + P.porVerso)
+      .map(function (x) { return '[' + (x.f + 1) + '] ' + x.t; })
+      .join(' '));
+  }
+  return versos.join('\n');
+}
+</script>
+
+<script type="text/plain" id="cod-m6">
+function generar(P) {
+  // Cada titular se parte en sujeto | predicado con la barra vertical.
+  const partes = P.titulares.split('\n')
+    .map(function (l) { return l.trim(); })
+    .filter(Boolean)
+    .map(function (l) {
+      const i = l.indexOf('|');
+      if (i < 0) return null;
+      return { sujeto: l.slice(0, i).trim(), resto: l.slice(i + 1).trim() };
+    })
+    .filter(Boolean);
+
+  if (partes.length < 2) return 'Hacen falta al menos dos titulares con barra |.';
+
+  // El sujeto de un titular se injerta en el predicado de otro.
+  const salida = [];
+  for (let i = 0; i < P.cantidad; i++) {
+    const a = Math.floor(Math.random() * partes.length);
+    let b = a;
+    while (b === a) b = Math.floor(Math.random() * partes.length);
+    salida.push(partes[a].sujeto + ' ' + partes[b].resto);
+  }
+  return salida.join('\n');
+}
+</script>
+
+<script type="text/plain" id="cod-m7">
+function generar(P) {
+  // Gramática libre de contexto: símbolo = opción | opción | opción
+  const reglas = {};
+  P.gramatica.split('\n').forEach(function (l) {
+    const i = l.indexOf('=');
+    if (i > 0) {
+      reglas[l.slice(0, i).trim()] = l.slice(i + 1).split('|')
+        .map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+  });
+
+  const elegir = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+
+  // Reescritura recursiva de cada símbolo entre llaves.
+  const expandir = function (s, prof) {
+    if (prof > 12) return s;
+    return s.replace(/\{(\w+)\}/g, function (m, k) {
+      return reglas[k] ? expandir(elegir(reglas[k]), prof + 1) : m;
+    });
+  };
+
+  const salida = [];
+  for (let i = 0; i < P.cantidad; i++) salida.push(expandir('{inicio}', 0));
+  return salida.join('\n');
+}
+</script>
+
+<script type="text/plain" id="cod-m8">
+function generar(P) {
+  const letras = P.texto.replace(/\s+/g, ' ').trim().split('');
+  const n = letras.length, cx = 450, cy = 300, piezas = [];
+
+  for (let i = 0; i < n; i++) {
+    const t = i / n;
+    let x, y, a = 0;
+
+    if (P.figura === 'espiral') {
+      const v = t * P.vueltas * Math.PI * 2;
+      const r = 26 + v * P.paso;
+      x = cx + r * Math.cos(v); y = cy + r * Math.sin(v);
+      a = v * 180 / Math.PI + 90;
+
+    } else if (P.figura === 'circulo') {
+      const porAnillo = Math.ceil(n / P.vueltas);
+      const anillo = Math.floor(i / porAnillo), j = i % porAnillo;
+      const v = (j / porAnillo) * Math.PI * 2;
+      const r = 70 + anillo * P.paso * 7;
+      x = cx + r * Math.cos(v); y = cy + r * Math.sin(v);
+      a = v * 180 / Math.PI + 90;
+
+    } else if (P.figura === 'onda') {
+      x = 55 + t * 790;
+      y = cy + Math.sin(t * Math.PI * 2 * P.vueltas) * P.paso * 11;
+      a = Math.cos(t * Math.PI * 2 * P.vueltas) * 28;
+
+    } else {                                   // triángulo: carmen figuratum clásico
+      let fila = 0, acumulado = 0;
+      while (acumulado + fila + 1 <= i) { acumulado += fila + 1; fila++; }
+      const col = i - acumulado;
+      x = cx + (col - fila / 2 + 0.5) * P.tam * 0.66;
+      y = 80 + fila * P.tam * 1.08;
+    }
+    piezas.push({ c: letras[i], x: x, y: y, a: a });
+  }
+
+  const esc = function (c) {
+    return c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c;
+  };
+  const cuerpo = piezas.map(function (p) {
+    const x = p.x.toFixed(1), y = p.y.toFixed(1);
+    return '<text x="' + x + '" y="' + y + '" transform="rotate(' +
+      p.a.toFixed(1) + ' ' + x + ' ' + y + ')">' + esc(p.c) + '</text>';
+  }).join('');
+
+  return '<svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">' +
+    '<style>text{font-family:' + P.familia + ';font-size:' + P.tam +
+    'px;fill:currentColor;text-anchor:middle}</style>' + cuerpo + '</svg>';
+}
+</script>
+
+<script type="text/plain" id="cod-m9">
+function generar(P) {
+  const palabra = P.palabra.trim() || 'signo';
+  const unidades = P.unidad === 'letras' ? palabra.split('') : [palabra];
+  const n = Math.max(1, P.repeticiones);
+  const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
+  const filas = Math.ceil(n / cols);
+  const piezas = [];
+
+  for (let i = 0; i < n; i++) {
+    const u = unidades[i % unidades.length];
+    let x, y;
+
+    if (P.disposicion === 'reticula') {
+      x = 90 + (i % cols) * (720 / Math.max(1, cols - 1 || 1));
+      y = 90 + Math.floor(i / cols) * (420 / Math.max(1, filas - 1 || 1));
+    } else if (P.disposicion === 'columna') {
+      x = 450 + (Math.random() - 0.5) * P.dispersion * 7;
+      y = 70 + (i / n) * 470;
+    } else {
+      x = 60 + Math.random() * 780;
+      y = 70 + Math.random() * 470;
+    }
+
+    const escala = P.escalaMin + Math.random() * Math.max(0, P.escalaMax - P.escalaMin);
+    const giro = (Math.random() - 0.5) * P.rotacion * 2;
+    const opacidad = (0.2 + Math.random() * 0.8).toFixed(2);
+    const t = u.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+    piezas.push('<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+      '" font-size="' + escala.toFixed(1) + '" opacity="' + opacidad +
+      '" transform="rotate(' + giro.toFixed(1) + ' ' + x.toFixed(1) + ' ' +
+      y.toFixed(1) + ')">' + t + '</text>');
+  }
+
+  return '<svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">' +
+    '<style>text{font-family:' + P.familia +
+    ';fill:currentColor;text-anchor:middle;dominant-baseline:middle}</style>' +
+    piezas.join('') + '</svg>';
+}
+</script>
+
+<script type="text/plain" id="cod-m10">
+function generar(P, api) {
+  const fuente = api.fuente();                      // imagen de origen
+  const cols = Math.max(8, P.columnas);
+  const proporcion = fuente.height / fuente.width;
+  const anchoCelda = 900 / cols;
+  const altoCelda = anchoCelda * P.relacion;
+  const filas = Math.max(1, Math.round(900 * proporcion / altoCelda));
+
+  // 1. La imagen se reduce a una retícula de cols x filas.
+  const lectura = document.createElement('canvas');
+  lectura.width = cols; lectura.height = filas;
+  lectura.getContext('2d').drawImage(fuente, 0, 0, cols, filas);
+  const d = lectura.getContext('2d').getImageData(0, 0, cols, filas).data;
+
+  // 2. Cada celda se sustituye por un signo según su luminancia.
+  const signos = P.signos.split('');
+  api.medir(900, Math.round(filas * altoCelda));
+  const c = api.ctx;
+  c.fillStyle = P.fondo;
+  c.fillRect(0, 0, api.canvas.width, api.canvas.height);
+  c.font = 'bold ' + (altoCelda * 0.92).toFixed(1) + 'px ' + P.familia;
+  c.textBaseline = 'top';
+
+  for (let f = 0; f < filas; f++) {
+    for (let k = 0; k < cols; k++) {
+      const i = (f * cols + k) * 4;
+      let lum = (d[i] * 0.2126 + d[i + 1] * 0.7152 + d[i + 2] * 0.0722) / 255;
+      if (P.invertir) lum = 1 - lum;
+      const s = signos[Math.min(signos.length - 1,
+        Math.floor((1 - lum) * signos.length))];
+      c.fillStyle = P.colorDeImagen
+        ? 'rgb(' + d[i] + ',' + d[i + 1] + ',' + d[i + 2] + ')'
+        : P.tinta;
+      c.fillText(s, k * anchoCelda, f * altoCelda);
+    }
+  }
+}
+</script>
+
+<script type="text/plain" id="cod-m11">
+function generar(P, api) {
+  const fuente = api.fuente();
+  const ancho = 900, alto = Math.round(900 * fuente.height / fuente.width);
+  const p = Math.max(1, P.pixel);
+  const sw = Math.max(1, Math.ceil(ancho / p)), sh = Math.max(1, Math.ceil(alto / p));
+
+  // 1. Se reduce la imagen: el píxel deja de ser invisible.
+  const chico = document.createElement('canvas');
+  chico.width = sw; chico.height = sh;
+  const cc = chico.getContext('2d');
+  cc.drawImage(fuente, 0, 0, sw, sh);
+
+  // 2. Se descompone el color y cada canal se desplaza por su cuenta.
+  const img = cc.getImageData(0, 0, sw, sh);
+  const o = img.data, n = new Uint8ClampedArray(o);
+  const tomar = function (x, y, canal) {
+    const cx = Math.min(sw - 1, Math.max(0, x)), cy = Math.min(sh - 1, Math.max(0, y));
+    return o[(cy * sw + cx) * 4 + canal];
+  };
+  for (let y = 0; y < sh; y++) {
+    for (let x = 0; x < sw; x++) {
+      const i = (y * sw + x) * 4;
+      n[i]     = tomar(x - P.rojo, y, 0);
+      n[i + 1] = tomar(x, y + P.verde, 1);
+      n[i + 2] = tomar(x + P.azul, y, 2);
+      if (P.umbral > 0) {
+        for (let k = 0; k < 3; k++) {
+          n[i + k] = n[i + k] > P.umbral ? 255 : Math.round(n[i + k] * 0.35);
+        }
+      }
+    }
+  }
+  cc.putImageData(new ImageData(n, sw, sh), 0, 0);
+
+  // 3. Se amplía sin suavizado y se impone el barrido de la pantalla.
+  api.medir(ancho, alto);
+  const c = api.ctx;
+  c.imageSmoothingEnabled = false;
+  c.clearRect(0, 0, ancho, alto);
+  c.drawImage(chico, 0, 0, sw, sh, 0, 0, ancho, alto);
+  if (P.barrido > 1) {
+    c.fillStyle = 'rgba(0,0,0,' + P.opacidadBarrido + ')';
+    for (let y = 0; y < alto; y += P.barrido) c.fillRect(0, y, ancho, 1);
+  }
+}
+</script>
+
+<script type="text/plain" id="cod-m12">
+function generar(P, api) {
+  const palabras = P.texto.split(/\s+/).filter(Boolean);
+  api.lienzo.innerHTML = '<div class="cinetica"><span></span></div>';
+  const span = api.lienzo.querySelector('span');
+  let i = 0;
+
+  // Cada palabra ocupa la pantalla sola, con su propio tamaño y duración.
+  const paso = function (mudo) {
+    const w = palabras[i % palabras.length];
+    const tam = P.tamMin + Math.random() * Math.max(0, P.tamMax - P.tamMin);
+    span.textContent = w;
+    span.style.fontSize = tam.toFixed(0) + 'px';
+    span.style.color = (i % P.acento === 0) ? P.colorAcento : '#f2f2f4';
+    if (P.sonido && !mudo) api.tono(90 * Math.pow(2, (i % 4) / 4), 0.11, 'square');
+    i++;
+  };
+
+  paso(api.reposo);
+  if (api.reposo) return;        // en reposo la pieza muestra solo su primer cuadro
+  api.intervalo(paso, P.ms);
+}
+</script>
+
+<script type="text/plain" id="cod-m13">
+function generar(P, api) {
+  const letras = P.texto.split('');
+  const escalas = {
+    pentatonica: [0, 2, 4, 7, 9],
+    menor: [0, 2, 3, 5, 7, 8, 10],
+    cromatica: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+  };
+  const escala = escalas[P.escala] || escalas.pentatonica;
+  const alfabeto = 'abcdefghijklmnnopqrstuvwxyz';
+
+  api.lienzo.innerHTML = '<div class="partitura"></div>';
+  const caja = api.lienzo.querySelector('.partitura');
+  letras.forEach(function (c) {
+    const s = document.createElement('span');
+    s.textContent = c === ' ' ? ' ' : c;
+    caja.appendChild(s);
+  });
+  const nodos = caja.querySelectorAll('span');
+  if (api.reposo) return;
+
+  // Cada letra se traduce a un grado de la escala: el texto suena mientras se lee.
+  let i = 0;
+  const paso = function () {
+    for (let k = 0; k < nodos.length; k++) nodos[k].classList.remove('activa');
+    const c = letras[i].toLowerCase().replace(/[áà]/, 'a').replace(/[éè]/, 'e')
+      .replace(/[íì]/, 'i').replace(/[óò]/, 'o').replace(/[úù]/, 'u').replace(/ñ/, 'n');
+    const pos = alfabeto.indexOf(c);
+    if (pos >= 0) {
+      const grado = escala[pos % escala.length];
+      const octava = P.octava + Math.floor(pos / escala.length);
+      api.tono(55 * Math.pow(2, octava + grado / 12), P.ms / 1000 * 0.85, P.timbre);
+      nodos[i].classList.add('activa');
+    }
+    i++;
+    if (i >= letras.length) { if (P.bucle) i = 0; else i = letras.length - 1; }
+  };
+  paso();
+  api.intervalo(paso, P.ms);
+}
+</script>
+
+<script type="text/plain" id="cod-m14">
+function generar(P) {
+  const texto = P.texto;
+  const base = (P.lexico.trim() ? P.lexico : texto).toLowerCase();
+  const palabras = base.match(/[a-záéíóúüñ]+/g) || [];
+
+  // El diccionario se arma con el propio corpus, ordenado alfabéticamente.
+  const dic = [];
+  palabras.forEach(function (w) {
+    if (w.length >= P.minimo && dic.indexOf(w) < 0) dic.push(w);
+  });
+  dic.sort();
+  if (dic.length < 2) return 'El léxico es demasiado corto para sustituir.';
+
+  // S+N: cada palabra se reemplaza por la que está N posiciones más adelante.
+  return texto.replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, function (w) {
+    if (w.length < P.minimo) return w;
+    const k = dic.indexOf(w.toLowerCase());
+    if (k < 0) return w;
+    const r = dic[(k + P.salto) % dic.length];
+    return w[0] === w[0].toUpperCase() ? r[0].toUpperCase() + r.slice(1) : r;
+  });
+}
+</script>
+
+<script type="text/plain" id="cod-m15">
+function generar(P, api) {
+  api.lienzo.innerHTML = '<div class="fugitivas"></div>';
+  const caja = api.lienzo.querySelector('.fugitivas');
+  const nodos = P.texto.split('').map(function (c) {
+    const s = document.createElement('span');
+    s.textContent = c === ' ' ? ' ' : c;
+    caja.appendChild(s);
+    return { el: s, dx: 0, dy: 0 };
+  });
+  if (api.reposo) return;
+
+  // El puntero empuja las letras: el signo se resiste a ser leído.
+  let mx = -9999, my = -9999;
+  const mover = function (ev) {
+    const r = caja.getBoundingClientRect();
+    mx = ev.clientX - r.left; my = ev.clientY - r.top;
+  };
+  const salir = function () { mx = -9999; my = -9999; };
+  caja.addEventListener('pointermove', mover);
+  caja.addEventListener('pointerleave', salir);
+  api.alSalir(function () {
+    caja.removeEventListener('pointermove', mover);
+    caja.removeEventListener('pointerleave', salir);
+  });
+
+  api.cuadro(function () {
+    const r = caja.getBoundingClientRect();
+    nodos.forEach(function (n) {
+      const b = n.el.getBoundingClientRect();
+      const cx = b.left - r.left + b.width / 2 - n.dx;
+      const cy = b.top - r.top + b.height / 2 - n.dy;
+      const vx = cx - mx, vy = cy - my;
+      const d = Math.sqrt(vx * vx + vy * vy) || 1;
+      let fx = 0, fy = 0;
+      if (d < P.radio) {
+        const f = (P.radio - d) / P.radio * P.fuerza;
+        fx = vx / d * f; fy = vy / d * f;
+      }
+      n.dx += (fx - n.dx) * P.elasticidad;
+      n.dy += (fy - n.dy) * P.elasticidad;
+      n.el.style.transform = 'translate(' + n.dx.toFixed(1) + 'px,' + n.dy.toFixed(1) + 'px)';
+    });
+  });
+}
+</script>
+
+<script>
+/* ---------------------------------------------------------------
+   Corpus de ejemplo. Todos los textos son originales.
+--------------------------------------------------------------- */
+const DIARIO = `El ayuntamiento aprobó anoche la ampliación del corredor oriente después de siete horas de sesión. La obra tendrá dieciocho kilómetros y atravesará cuatro colonias que hasta ahora dependían de un solo camino de terracería. Los vecinos reunidos afuera del recinto pidieron que se respeten los árboles del camellón central y entregaron un documento firmado por trescientas personas. La dirección de obras respondió que el proyecto contempla un estudio de impacto y que los trabajos comenzarán en enero. Ningún regidor votó en contra.`;
+
+const TEXTO_A = `Antes de operar el equipo verifique que la válvula principal esté cerrada y que el manómetro marque cero. Conecte la línea de alimentación al puerto inferior. La temperatura de trabajo no debe exceder los sesenta grados. Si el indicador rojo permanece encendido más de diez segundos, interrumpa el procedimiento y revise el sello de la cámara.`;
+
+const TEXTO_B = `Llegamos a la playa cuando el viento ya había volteado las lanchas. Una mujer vendía mangos verdes desde una hielera y nos dijo que el muelle llevaba dos años cerrado. Caminamos hasta donde el agua se vuelve oscura. No había nadie más. El faro seguía girando aunque nadie lo necesitaba.`;
+
+const FUENTES = [
+`lo que no tiene forma precede a lo que tiene nombre
+el vacío sostiene la rueda
+quien conoce el límite no se agota
+el agua no disputa y por eso vence`,
+`a las ocho de la mañana el cielo estaba limpio
+conté las camas que quedaban en el pasillo
+alguien pidió agua y no había
+anoté la hora en el margen del cuaderno`,
+`la memoria no guarda hechos sino instrucciones para rehacerlos
+toda descripción es ya una decisión
+el observador modifica aquello que registra
+entre el signo y la cosa hay una distancia que no se cierra`
+];
+
+const TITULARES = `La Secretaría de Movilidad | anuncia un aumento del treinta por ciento en las tarifas
+Un equipo de astrónomos | detecta una señal que se repite cada ciento veinte días
+El sindicato de panaderos | pierde la final en tiempos extra
+La aerolínea estatal | presenta su nuevo álbum tras ocho años de silencio
+Una colonia del oriente | se declara en quiebra ante los tribunales
+El campeón defensor | será sometido a una auditoría ambiental
+La universidad pública | retira del mercado trescientos mil envases
+Un volcán del centro del país | firma contrato por cuatro temporadas`;
+
+const GRAMATICA = `inicio = {sujeto} {accion}. | En {lugar}, {sujeto} {accion}. | {sujeto} descubre que {revelacion}. | Durante {tiempo}, {sujeto} {accion}.
+sujeto = Un obispo ciego | Una cartógrafa | El último relojero del puerto | Una niña hecha de sal | Un ingeniero de puentes | La viuda de un tipógrafo | Un coronel sin ejército | Una maestra rural
+accion = colecciona {objeto} que nadie recuerda haber perdido | traduce {objeto} al idioma de los pájaros | cambia {objeto} por una promesa | entierra {objeto} bajo la casa | lee {objeto} en voz alta hasta que amanece | reparte {objeto} entre los muertos
+objeto = relojes detenidos | cartas sin remitente | espejos de agua | plumas de un pájaro extinto | mapas de ciudades que no existen | el nombre de su padre | monedas de un país disuelto
+lugar = un pueblo donde nunca llueve | una isla que aparece cada siete años | la biblioteca del fondo del lago | una estación de tren abandonada | el último día del mundo
+tiempo = cuarenta años | una sola noche | tres inviernos seguidos | el tiempo que tarda en hervir el agua
+revelacion = su sombra ha envejecido más rápido que él | el río corre hacia atrás los martes | todos los habitantes del pueblo son el mismo hombre | las palabras que escribe aparecen tatuadas en otros cuerpos | nadie ha nacido en esa ciudad desde hace un siglo`;
+
+/* 14 posiciones × 10 variantes. Rima ABBA ABBA CCD EDE. */
+const VERSOS = [
+["La máquina no duerme en su escritura,","Un dado cae sobre la hoja impura,","El alfabeto gira sin clausura,","Nadie firma la página futura,","La tijera divide la figura,","Un bastidor de madera conjetura,","El azar ha tomado la mesura,","Se pierde el nombre propio en la textura,","La bolsa agita toda la basura,","Un lector arma solo la criatura,"],
+["y escribe sin cansancio ni argumento;","mientras calla el autor su nacimiento;","no hay mano que gobierne el movimiento;","se mezclan el error y el pensamiento;","y el sentido se queda sin sustento;","la regla se disuelve en el intento;","un código respira como el viento;","la cinta perforada es instrumento;","y nada permanece más de un momento;","la sintaxis se rompe en un fragmento;"],
+["cada palabra ocupa su momento,","y el orden es apenas un invento,","la frase se construye con aliento,","un verbo se desprende de su acento,","la máquina repite su lamento,","el libro se despliega como un cuento,","ninguna voz reclama el fundamento,","la letra se sostiene sin cimiento,","el ruido se convierte en documento,","un signo sobrevive al escarmiento,"],
+["y el texto se completa en su lectura.","donde el azar reparte la ventura.","sin más ley que la propia arquitectura.","que nadie reconoce ya por pura.","así nace una extraña partitura.","la página sostiene su locura.","y queda la materia, densa y dura.","de un libro que carece de costura.","un cuerpo de papel sin apostura.","el sentido se escapa de su hondura."],
+["Quien lee desordena la figura,","Ningún autor reclama la escritura,","La imprenta repitió la desventura,","Un cálculo sustenta la hermosura,","El código se vuelve criatura,","La cinta deposita su mesura,","Cien mil millones caben en la anchura,","El verso se desliza en la ranura,","Toda combinación es conjetura,","La máquina trabaja sin premura,"],
+["y multiplica el mismo pensamiento;","la obra se disuelve en su fermento;","no hay centro que resista el movimiento;","un alfabeto suelto como el viento;","y el lector se convierte en instrumento;","la regla sobrevive al nacimiento;","el poema se agota en un momento;","y el sentido se arma de un fragmento;","cada línea sostiene su tormento;","se escribe sin memoria y sin lamento;"],
+["el verso se repite sin aliento,","y nadie reconoce el procedimiento,","la máquina no tiene sentimiento,","un número gobierna el movimiento,","la mano se retira del intento,","ninguna voluntad detiene el viento,","la copia se despliega en el aumento,","el ruido se adelgaza y se hace cuento,","se juntan el error y el ornamento,","la lengua se devora en su momento,"],
+["y queda solamente la estructura.","hasta volverse pura literatura.","y el libro se abandona a su clausura.","ningún recuerdo guarda la ternura.","así se multiplica la escritura.","de un orden que no admite cerradura.","y el texto se dispersa en la llanura.","porque el sentido vive de la usura.","y el signo recupera su figura.","sin nadie que lo lea con cordura."],
+["La página se vuelve una novela","Un hilo se desprende de la tela","El verso se desprende y luego vuela","La máquina combina con cautela","Alguien quema las letras en la vela","La obra se construye y se cancela","Un algoritmo escribe y nos revela","El orden que buscamos nos consuela","La frase se deshace y se congela","Un resto de lenguaje nos desvela"],
+["y nadie sabe ya quién la revela.","que el tiempo del lector no nos cancela.","mientras la voz del autor se nivela.","aquello que la imprenta siempre vela.","y el sentido final se desconsuela.","igual que una bujía o una vela.","lo que ninguna mano ya modela.","de un texto que respira y que se hiela.","en una biblioteca paralela.","la trama que ninguno ya recela."],
+["Acaso no haya un centro todavía,","Tal vez la obra entera sea fría,","Quizá la permutación sea la guía,","El nombre del autor ya no decía,","Y en cada lectura amanece un día,","No queda del poema la armonía,","Alguien busca una vieja melodía,","La máquina no tiene compañía,","Se pierde en el proceso la alegría,","La letra se sostiene todavía,"],
+["ni libro que no esté ya programado;","y todo lo que escribe lo ha heredado;","en un papel de otro siglo, ya borrado;","lo que un lector ausente había soñado;","un signo repetido y desatado;","aquello que la máquina ha callado;","el nombre que ninguno ha pronunciado;","un campo de palabras ya sembrado;","el ruido que el sistema ha tolerado;","aquel sentido que creíste dado;"],
+["y sin embargo insiste todavía","la combinatoria sigue su porfía","el texto se levanta cada día","y vuelve a comenzar la letanía","no hay regla que sostenga la poesía","se agota la razón, no la energía","persiste la materia y su armonía","ninguna voz lo nombra ni lo guía","el signo se repite y desconfía","la máquina prosigue su manía"],
+["nos habla desde el código cerrado.","aquello que ningún hombre ha firmado.","y el libro queda abierto y acabado.","un verso que jamás fue pronunciado.","lo que el azar por fin ha demostrado.","el texto que tú mismo has terminado.","un sentido que nadie ha reclamado.","la obra que la máquina ha soñado.","y todo lo demás queda callado.","el lector es ahora el convocado."]
+];
+
+/* ---------------------------------------------------------------
+   Implementaciones nativas (copia exacta del código mostrado).
+   Se usan si el navegador impide compilar el panel editado.
+--------------------------------------------------------------- */
+const NATIVA = {
+m1: function (P) {
+  let palabras = P.diario.split(/\s+/).filter(Boolean);
+  if (P.limpiar) palabras = palabras.map(function (w) {
+    return w.replace(/[.,;:()«»"¡!¿?—]/g, '');
+  }).filter(Boolean);
+  for (let i = palabras.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = palabras[i]; palabras[i] = palabras[j]; palabras[j] = t;
+  }
+  const poema = palabras.slice(0, Math.min(P.extension, palabras.length));
+  const versos = [];
+  for (let i = 0; i < poema.length; i += P.porVerso) {
+    versos.push(poema.slice(i, i + P.porVerso).join(' '));
+  }
+  return versos.join('\n');
+},
+m2: function (P) {
+  const cortar = function (t) { return t.split(/\s+/).filter(Boolean); };
+  const A = cortar(P.textoA), B = cortar(P.textoB);
+  const bloques = [];
+  const largo = Math.max(A.length, B.length);
+  for (let i = 0; i < largo; i += P.bloque) {
+    const a = A.slice(i, i + P.bloque);
+    const b = B.slice(i, i + P.bloque);
+    if (a.length) bloques.push(a.join(' '));
+    if (b.length) bloques.push(b.join(' '));
+  }
+  if (P.azar) {
+    for (let i = bloques.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = bloques[i]; bloques[i] = bloques[j]; bloques[j] = t;
+    }
+  }
+  const versos = [];
+  for (let i = 0; i < bloques.length; i += P.porVerso) {
+    versos.push(bloques.slice(i, i + P.porVerso).join(' '));
+  }
+  return versos.join('\n');
+},
+m3: function (P) {
+  const lista = function (s) {
+    return s.split(/[,\n]/).map(function (x) { return x.trim(); }).filter(Boolean);
+  };
+  const elegir = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  const SUS = lista(P.sustantivos), ADJ = lista(P.adjetivos);
+  const CON = lista(P.conectores), CUA = lista(P.cuantificadores);
+  const proposicion = function () {
+    return elegir(CUA) + ' ' + elegir(SUS) + ' ES ' + elegir(ADJ);
+  };
+  const lineas = [];
+  for (let i = 0; i < P.lineas; i++) {
+    lineas.push(proposicion() + ' ' + elegir(CON) + ' ' + proposicion() + '.');
+  }
+  return lineas.join('\n');
+},
+m4: function (P) {
+  const elegidos = [];
+  for (let v = 0; v < 14; v++) {
+    elegidos.push(P.fijos[v] === null ? Math.floor(Math.random() * 10) : P.fijos[v]);
+  }
+  const versos = elegidos.map(function (s, v) { return P.versos[v][s]; });
+  const estrofas = [versos.slice(0, 4), versos.slice(4, 8), versos.slice(8, 11), versos.slice(11, 14)];
+  const cifra = elegidos.map(function (n) { return n + 1; }).join('-');
+  return estrofas.map(function (e) { return e.join('\n'); }).join('\n\n')
+    + '\n\n— combinación ' + cifra + ' de 100 000 000 000 000';
+},
+m5: function (P) {
+  const frag = [];
+  P.fuentes.forEach(function (texto, i) {
+    texto.split(/\n+/).map(function (s) { return s.trim(); })
+      .filter(Boolean).forEach(function (t) { frag.push({ t: t, f: i }); });
+  });
+  const quedan = frag.slice(); const salida = [];
+  while (quedan.length) {
+    const ultimo = salida.length ? salida[salida.length - 1].f : -1;
+    let cand = P.restriccion ? quedan.filter(function (x) { return x.f !== ultimo; }) : quedan;
+    if (!cand.length) cand = quedan;
+    const el = cand[Math.floor(Math.random() * cand.length)];
+    salida.push(el); quedan.splice(quedan.indexOf(el), 1);
+  }
+  const versos = [];
+  for (let i = 0; i < salida.length; i += P.porVerso) {
+    versos.push(salida.slice(i, i + P.porVerso)
+      .map(function (x) { return '[' + (x.f + 1) + '] ' + x.t; }).join(' '));
+  }
+  return versos.join('\n');
+},
+m6: function (P) {
+  const partes = P.titulares.split('\n').map(function (l) { return l.trim(); })
+    .filter(Boolean).map(function (l) {
+      const i = l.indexOf('|');
+      if (i < 0) return null;
+      return { sujeto: l.slice(0, i).trim(), resto: l.slice(i + 1).trim() };
+    }).filter(Boolean);
+  if (partes.length < 2) return 'Hacen falta al menos dos titulares con barra |.';
+  const salida = [];
+  for (let i = 0; i < P.cantidad; i++) {
+    const a = Math.floor(Math.random() * partes.length);
+    let b = a;
+    while (b === a) b = Math.floor(Math.random() * partes.length);
+    salida.push(partes[a].sujeto + ' ' + partes[b].resto);
+  }
+  return salida.join('\n');
+},
+m7: function (P) {
+  const reglas = {};
+  P.gramatica.split('\n').forEach(function (l) {
+    const i = l.indexOf('=');
+    if (i > 0) {
+      reglas[l.slice(0, i).trim()] = l.slice(i + 1).split('|')
+        .map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+  });
+  const elegir = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+  const expandir = function (s, prof) {
+    if (prof > 12) return s;
+    return s.replace(/\{(\w+)\}/g, function (m, k) {
+      return reglas[k] ? expandir(elegir(reglas[k]), prof + 1) : m;
+    });
+  };
+  const salida = [];
+  for (let i = 0; i < P.cantidad; i++) salida.push(expandir('{inicio}', 0));
+  return salida.join('\n');
+},
+m8: function (P) {
+  const letras = P.texto.replace(/\s+/g, ' ').trim().split('');
+  const n = letras.length, cx = 450, cy = 300, piezas = [];
+
+  for (let i = 0; i < n; i++) {
+    const t = i / n;
+    let x, y, a = 0;
+
+    if (P.figura === 'espiral') {
+      const v = t * P.vueltas * Math.PI * 2;
+      const r = 26 + v * P.paso;
+      x = cx + r * Math.cos(v); y = cy + r * Math.sin(v);
+      a = v * 180 / Math.PI + 90;
+
+    } else if (P.figura === 'circulo') {
+      const porAnillo = Math.ceil(n / P.vueltas);
+      const anillo = Math.floor(i / porAnillo), j = i % porAnillo;
+      const v = (j / porAnillo) * Math.PI * 2;
+      const r = 70 + anillo * P.paso * 7;
+      x = cx + r * Math.cos(v); y = cy + r * Math.sin(v);
+      a = v * 180 / Math.PI + 90;
+
+    } else if (P.figura === 'onda') {
+      x = 55 + t * 790;
+      y = cy + Math.sin(t * Math.PI * 2 * P.vueltas) * P.paso * 11;
+      a = Math.cos(t * Math.PI * 2 * P.vueltas) * 28;
+
+    } else {                                   // triángulo: carmen figuratum clásico
+      let fila = 0, acumulado = 0;
+      while (acumulado + fila + 1 <= i) { acumulado += fila + 1; fila++; }
+      const col = i - acumulado;
+      x = cx + (col - fila / 2 + 0.5) * P.tam * 0.66;
+      y = 80 + fila * P.tam * 1.08;
+    }
+    piezas.push({ c: letras[i], x: x, y: y, a: a });
+  }
+
+  const esc = function (c) {
+    return c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c;
+  };
+  const cuerpo = piezas.map(function (p) {
+    const x = p.x.toFixed(1), y = p.y.toFixed(1);
+    return '<text x="' + x + '" y="' + y + '" transform="rotate(' +
+      p.a.toFixed(1) + ' ' + x + ' ' + y + ')">' + esc(p.c) + '</text>';
+  }).join('');
+
+  return '<svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">' +
+    '<style>text{font-family:' + P.familia + ';font-size:' + P.tam +
+    'px;fill:currentColor;text-anchor:middle}</style>' + cuerpo + '</svg>';
+},
+m9: function (P) {
+  const palabra = P.palabra.trim() || 'signo';
+  const unidades = P.unidad === 'letras' ? palabra.split('') : [palabra];
+  const n = Math.max(1, P.repeticiones);
+  const cols = Math.max(1, Math.ceil(Math.sqrt(n)));
+  const filas = Math.ceil(n / cols);
+  const piezas = [];
+
+  for (let i = 0; i < n; i++) {
+    const u = unidades[i % unidades.length];
+    let x, y;
+
+    if (P.disposicion === 'reticula') {
+      x = 90 + (i % cols) * (720 / Math.max(1, cols - 1 || 1));
+      y = 90 + Math.floor(i / cols) * (420 / Math.max(1, filas - 1 || 1));
+    } else if (P.disposicion === 'columna') {
+      x = 450 + (Math.random() - 0.5) * P.dispersion * 7;
+      y = 70 + (i / n) * 470;
+    } else {
+      x = 60 + Math.random() * 780;
+      y = 70 + Math.random() * 470;
+    }
+
+    const escala = P.escalaMin + Math.random() * Math.max(0, P.escalaMax - P.escalaMin);
+    const giro = (Math.random() - 0.5) * P.rotacion * 2;
+    const opacidad = (0.2 + Math.random() * 0.8).toFixed(2);
+    const t = u.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+    piezas.push('<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+      '" font-size="' + escala.toFixed(1) + '" opacity="' + opacidad +
+      '" transform="rotate(' + giro.toFixed(1) + ' ' + x.toFixed(1) + ' ' +
+      y.toFixed(1) + ')">' + t + '</text>');
+  }
+
+  return '<svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">' +
+    '<style>text{font-family:' + P.familia +
+    ';fill:currentColor;text-anchor:middle;dominant-baseline:middle}</style>' +
+    piezas.join('') + '</svg>';
+},
+m10: function (P, api) {
+  const fuente = api.fuente();                      // imagen de origen
+  const cols = Math.max(8, P.columnas);
+  const proporcion = fuente.height / fuente.width;
+  const anchoCelda = 900 / cols;
+  const altoCelda = anchoCelda * P.relacion;
+  const filas = Math.max(1, Math.round(900 * proporcion / altoCelda));
+
+  // 1. La imagen se reduce a una retícula de cols x filas.
+  const lectura = document.createElement('canvas');
+  lectura.width = cols; lectura.height = filas;
+  lectura.getContext('2d').drawImage(fuente, 0, 0, cols, filas);
+  const d = lectura.getContext('2d').getImageData(0, 0, cols, filas).data;
+
+  // 2. Cada celda se sustituye por un signo según su luminancia.
+  const signos = P.signos.split('');
+  api.medir(900, Math.round(filas * altoCelda));
+  const c = api.ctx;
+  c.fillStyle = P.fondo;
+  c.fillRect(0, 0, api.canvas.width, api.canvas.height);
+  c.font = 'bold ' + (altoCelda * 0.92).toFixed(1) + 'px ' + P.familia;
+  c.textBaseline = 'top';
+
+  for (let f = 0; f < filas; f++) {
+    for (let k = 0; k < cols; k++) {
+      const i = (f * cols + k) * 4;
+      let lum = (d[i] * 0.2126 + d[i + 1] * 0.7152 + d[i + 2] * 0.0722) / 255;
+      if (P.invertir) lum = 1 - lum;
+      const s = signos[Math.min(signos.length - 1,
+        Math.floor((1 - lum) * signos.length))];
+      c.fillStyle = P.colorDeImagen
+        ? 'rgb(' + d[i] + ',' + d[i + 1] + ',' + d[i + 2] + ')'
+        : P.tinta;
+      c.fillText(s, k * anchoCelda, f * altoCelda);
+    }
+  }
+},
+m11: function (P, api) {
+  const fuente = api.fuente();
+  const ancho = 900, alto = Math.round(900 * fuente.height / fuente.width);
+  const p = Math.max(1, P.pixel);
+  const sw = Math.max(1, Math.ceil(ancho / p)), sh = Math.max(1, Math.ceil(alto / p));
+
+  // 1. Se reduce la imagen: el píxel deja de ser invisible.
+  const chico = document.createElement('canvas');
+  chico.width = sw; chico.height = sh;
+  const cc = chico.getContext('2d');
+  cc.drawImage(fuente, 0, 0, sw, sh);
+
+  // 2. Se descompone el color y cada canal se desplaza por su cuenta.
+  const img = cc.getImageData(0, 0, sw, sh);
+  const o = img.data, n = new Uint8ClampedArray(o);
+  const tomar = function (x, y, canal) {
+    const cx = Math.min(sw - 1, Math.max(0, x)), cy = Math.min(sh - 1, Math.max(0, y));
+    return o[(cy * sw + cx) * 4 + canal];
+  };
+  for (let y = 0; y < sh; y++) {
+    for (let x = 0; x < sw; x++) {
+      const i = (y * sw + x) * 4;
+      n[i]     = tomar(x - P.rojo, y, 0);
+      n[i + 1] = tomar(x, y + P.verde, 1);
+      n[i + 2] = tomar(x + P.azul, y, 2);
+      if (P.umbral > 0) {
+        for (let k = 0; k < 3; k++) {
+          n[i + k] = n[i + k] > P.umbral ? 255 : Math.round(n[i + k] * 0.35);
+        }
+      }
+    }
+  }
+  cc.putImageData(new ImageData(n, sw, sh), 0, 0);
+
+  // 3. Se amplía sin suavizado y se impone el barrido de la pantalla.
+  api.medir(ancho, alto);
+  const c = api.ctx;
+  c.imageSmoothingEnabled = false;
+  c.clearRect(0, 0, ancho, alto);
+  c.drawImage(chico, 0, 0, sw, sh, 0, 0, ancho, alto);
+  if (P.barrido > 1) {
+    c.fillStyle = 'rgba(0,0,0,' + P.opacidadBarrido + ')';
+    for (let y = 0; y < alto; y += P.barrido) c.fillRect(0, y, ancho, 1);
+  }
+},
+m12: function (P, api) {
+  const palabras = P.texto.split(/\s+/).filter(Boolean);
+  api.lienzo.innerHTML = '<div class="cinetica"><span></span></div>';
+  const span = api.lienzo.querySelector('span');
+  let i = 0;
+
+  // Cada palabra ocupa la pantalla sola, con su propio tamaño y duración.
+  const paso = function (mudo) {
+    const w = palabras[i % palabras.length];
+    const tam = P.tamMin + Math.random() * Math.max(0, P.tamMax - P.tamMin);
+    span.textContent = w;
+    span.style.fontSize = tam.toFixed(0) + 'px';
+    span.style.color = (i % P.acento === 0) ? P.colorAcento : '#f2f2f4';
+    if (P.sonido && !mudo) api.tono(90 * Math.pow(2, (i % 4) / 4), 0.11, 'square');
+    i++;
+  };
+
+  paso(api.reposo);
+  if (api.reposo) return;        // en reposo la pieza muestra solo su primer cuadro
+  api.intervalo(paso, P.ms);
+},
+m13: function (P, api) {
+  const letras = P.texto.split('');
+  const escalas = {
+    pentatonica: [0, 2, 4, 7, 9],
+    menor: [0, 2, 3, 5, 7, 8, 10],
+    cromatica: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+  };
+  const escala = escalas[P.escala] || escalas.pentatonica;
+  const alfabeto = 'abcdefghijklmnnopqrstuvwxyz';
+
+  api.lienzo.innerHTML = '<div class="partitura"></div>';
+  const caja = api.lienzo.querySelector('.partitura');
+  letras.forEach(function (c) {
+    const s = document.createElement('span');
+    s.textContent = c === ' ' ? ' ' : c;
+    caja.appendChild(s);
+  });
+  const nodos = caja.querySelectorAll('span');
+  if (api.reposo) return;
+
+  // Cada letra se traduce a un grado de la escala: el texto suena mientras se lee.
+  let i = 0;
+  const paso = function () {
+    for (let k = 0; k < nodos.length; k++) nodos[k].classList.remove('activa');
+    const c = letras[i].toLowerCase().replace(/[áà]/, 'a').replace(/[éè]/, 'e')
+      .replace(/[íì]/, 'i').replace(/[óò]/, 'o').replace(/[úù]/, 'u').replace(/ñ/, 'n');
+    const pos = alfabeto.indexOf(c);
+    if (pos >= 0) {
+      const grado = escala[pos % escala.length];
+      const octava = P.octava + Math.floor(pos / escala.length);
+      api.tono(55 * Math.pow(2, octava + grado / 12), P.ms / 1000 * 0.85, P.timbre);
+      nodos[i].classList.add('activa');
+    }
+    i++;
+    if (i >= letras.length) { if (P.bucle) i = 0; else i = letras.length - 1; }
+  };
+  paso();
+  api.intervalo(paso, P.ms);
+},
+m14: function (P) {
+  const texto = P.texto;
+  const base = (P.lexico.trim() ? P.lexico : texto).toLowerCase();
+  const palabras = base.match(/[a-záéíóúüñ]+/g) || [];
+
+  // El diccionario se arma con el propio corpus, ordenado alfabéticamente.
+  const dic = [];
+  palabras.forEach(function (w) {
+    if (w.length >= P.minimo && dic.indexOf(w) < 0) dic.push(w);
+  });
+  dic.sort();
+  if (dic.length < 2) return 'El léxico es demasiado corto para sustituir.';
+
+  // S+N: cada palabra se reemplaza por la que está N posiciones más adelante.
+  return texto.replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, function (w) {
+    if (w.length < P.minimo) return w;
+    const k = dic.indexOf(w.toLowerCase());
+    if (k < 0) return w;
+    const r = dic[(k + P.salto) % dic.length];
+    return w[0] === w[0].toUpperCase() ? r[0].toUpperCase() + r.slice(1) : r;
+  });
+},
+m15: function (P, api) {
+  api.lienzo.innerHTML = '<div class="fugitivas"></div>';
+  const caja = api.lienzo.querySelector('.fugitivas');
+  const nodos = P.texto.split('').map(function (c) {
+    const s = document.createElement('span');
+    s.textContent = c === ' ' ? ' ' : c;
+    caja.appendChild(s);
+    return { el: s, dx: 0, dy: 0 };
+  });
+  if (api.reposo) return;
+
+  // El puntero empuja las letras: el signo se resiste a ser leído.
+  let mx = -9999, my = -9999;
+  const mover = function (ev) {
+    const r = caja.getBoundingClientRect();
+    mx = ev.clientX - r.left; my = ev.clientY - r.top;
+  };
+  const salir = function () { mx = -9999; my = -9999; };
+  caja.addEventListener('pointermove', mover);
+  caja.addEventListener('pointerleave', salir);
+  api.alSalir(function () {
+    caja.removeEventListener('pointermove', mover);
+    caja.removeEventListener('pointerleave', salir);
+  });
+
+  api.cuadro(function () {
+    const r = caja.getBoundingClientRect();
+    nodos.forEach(function (n) {
+      const b = n.el.getBoundingClientRect();
+      const cx = b.left - r.left + b.width / 2 - n.dx;
+      const cy = b.top - r.top + b.height / 2 - n.dy;
+      const vx = cx - mx, vy = cy - my;
+      const d = Math.sqrt(vx * vx + vy * vy) || 1;
+      let fx = 0, fy = 0;
+      if (d < P.radio) {
+        const f = (P.radio - d) / P.radio * P.fuerza;
+        fx = vx / d * f; fy = vy / d * f;
+      }
+      n.dx += (fx - n.dx) * P.elasticidad;
+      n.dy += (fy - n.dy) * P.elasticidad;
+      n.el.style.transform = 'translate(' + n.dx.toFixed(1) + 'px,' + n.dy.toFixed(1) + 'px)';
+    });
+  });
+}
+};
+
+/* ---------------------------------------------------------------
+   Descriptores de las siete máquinas.
+--------------------------------------------------------------- */
+const sel14 = (function () {
+  let h = '<div class="rejilla14">';
+  for (let v = 0; v < 14; v++) {
+    h += '<label>Verso ' + (v + 1) + '<select data-fijo="' + v + '"><option value="">azar</option>';
+    for (let s = 0; s < 10; s++) h += '<option value="' + s + '">serie ' + (s + 1) + '</option>';
+    h += '</select></label>';
+  }
+  return h + '</div>';
+})();
+
+const MAQUINAS = [
+{
+  id:'m1', num:'01', meta:'ca. 1920 · Tristan Tzara · París',
+  titulo:'Receta para componer un poema dadá',
+  ficha:`<p>Tzara publica un poema que consiste en sus propias instrucciones: tomar un diario, recortar las palabras de un artículo, meterlas en una bolsa, agitarla, sacarlas una a una y copiarlas en el orden en que vayan saliendo. La obra se desplaza del resultado al <span class="term">procedimiento</span>, y el azar queda a cargo de todo el nivel sintáctico.</p><p>Gache sitúa esta receta en la línea que va de Mallarmé a las combinatorias digitales: el azar funciona como instrumento para provocar disturbios en estructuras dadas y como vía de escape del control autoral. La máquina de abajo ejecuta los cinco pasos literalmente.</p>`,
+  campos:`<label class="campo">Diario (corpus de entrada)<textarea data-p="diario" data-t="text" rows="7">${DIARIO}</textarea></label>
+  <div class="fila">
+    <label class="campo">Palabras del poema<input type="number" data-p="extension" data-t="num" value="40" min="4" max="400"></label>
+    <label class="campo">Palabras por verso<input type="number" data-p="porVerso" data-t="num" value="5" min="1" max="20"></label>
+  </div>
+  <label class="check"><input type="checkbox" data-p="limpiar" data-t="bool" checked> Quitar puntuación al recortar</label>`,
+  eje:'sin-regla',
+  logica:{
+    pasos:['Separa el diario en palabras.', 'Quita la puntuación si se pide.', 'Baraja la lista entera con Fisher-Yates.', 'Toma las primeras N y las corta en versos de longitud fija.'],
+    azar:'Decide todo el orden. Cualquier permutación de la lista es igual de probable y ninguna está prohibida.',
+    regla:'Solo impone el corte en versos. No hay gramática, ni plantilla, ni restricción de contigüidad.',
+    material:'El léxico del diario y sus frecuencias. De la sintaxis original no sobrevive nada.'
+  },
+  tags:['Azar','Destitución del autor','Obra como instrucción'],
+  pregunta:'El texto de la receta circula hoy más que cualquiera de los poemas que produjo. Discute si la obra de Tzara es el procedimiento, cada ejecución, o la relación entre ambos, y qué consecuencias tiene esa decisión para la noción de original.'
+},
+{
+  id:'m2', num:'02', meta:'Fines de los años cincuenta · Burroughs y Gysin',
+  titulo:'Cut-up',
+  ficha:`<p>El escritor corta pasajes de sus propias obras y también de obras ajenas, y reensambla los fragmentos de forma aleatoria. A diferencia de la receta dadá, el cut-up conserva bloques de sintaxis intactos, de modo que la salida mantiene islas de sentido que chocan entre sí. El procedimiento hace visible que el material ajeno es <span class="term">material</span>, disponible para el corte.</p><p>Los dos corpus cargados pertenecen a registros opuestos: un manual técnico y una crónica de viaje. El tamaño del bloque controla cuánta sintaxis sobrevive al corte.</p>`,
+  campos:`<label class="campo">Fuente A<textarea data-p="textoA" data-t="text" rows="5">${TEXTO_A}</textarea></label>
+  <label class="campo">Fuente B<textarea data-p="textoB" data-t="text" rows="5">${TEXTO_B}</textarea></label>
+  <div class="fila">
+    <label class="campo">Palabras por bloque<input type="number" data-p="bloque" data-t="num" value="4" min="1" max="30"></label>
+    <label class="campo">Bloques por verso<input type="number" data-p="porVerso" data-t="num" value="3" min="1" max="12"></label>
+  </div>
+  <label class="check"><input type="checkbox" data-p="azar" data-t="bool" checked> Reensamblar al azar (si se desactiva, alterna A y B)</label>`,
+  eje:'acotado',
+  logica:{
+    pasos:['Corta cada fuente en bloques de n palabras.', 'Intercala los bloques de A y de B.', 'Si se pide, baraja el conjunto de bloques.', 'Reagrupa los bloques en versos.'],
+    azar:'Decide el orden de los bloques, nunca el de las palabras dentro de un bloque.',
+    regla:'El tamaño del bloque fija cuánta sintaxis sobrevive al corte; la alternancia A-B garantiza el choque de registros.',
+    material:'Dos corpus de registro opuesto. El efecto nace de la colisión entre ambos.'
+  },
+  tags:['Montaje','Apropiación','Bloque sintáctico'],
+  pregunta:'Ejecuta la máquina con bloques de una palabra y luego de doce. Determina en qué umbral el resultado deja de leerse como ruido y empieza a leerse como prosa, y explica qué dice ese umbral sobre dónde reside el sentido.'
+},
+{
+  id:'m3', num:'03', meta:'1959 · Theo Lutz y Max Bense · Stuttgart',
+  titulo:'Textos estocásticos',
+  ficha:`<p>Se considera la primera composición poética generada digitalmente. Bense, filósofo y teórico de la estética de la información, propuso a Lutz, estudiante de informática en la Escuela Politécnica de Stuttgart, tomar un vocabulario reducido y programar con él frases cortas de sujeto, verbo y objeto, articuladas mediante conectores lógicos como la negación y la coordinación. Los resultados se publicaron a fines de 1959 en <i>Augenblick</i>, la revista de Bense.</p><p>Aquí el azar ya no gobierna el orden sino la <span class="term">selección dentro de una plantilla</span>. La sintaxis la pone el programa; el léxico, el corpus. El vocabulario cargado evoca el campo semántico de una aldea y un castillo, sin reproducir ningún texto ajeno.</p>`,
+  campos:`<label class="campo">Sustantivos<textarea data-p="sustantivos" data-t="text" rows="3">ALDEA, CASTILLO, CAMINO, MIRADA, PUERTA, SEÑOR, CAMPESINO, NIEVE, TORRE, CARTA, NOCHE, DISTANCIA</textarea></label>
+  <label class="campo">Adjetivos<textarea data-p="adjetivos" data-t="text" rows="3">LEJANO, CERRADO, VISIBLE, LIBRE, EXTRAÑO, VACÍO, NUEVO, OCULTO, MUDO, TARDÍO, PERMITIDO, INÚTIL</textarea></label>
+  <div class="fila">
+    <label class="campo">Cuantificadores<textarea data-p="cuantificadores" data-t="text" rows="2">TODO, NO TODO, UN, NINGÚN, CUALQUIER</textarea></label>
+    <label class="campo">Conectores lógicos<textarea data-p="conectores" data-t="text" rows="2">Y, O BIEN, POR LO TANTO, SIN EMBARGO, DE MODO QUE</textarea></label>
+  </div>
+  <label class="campo">Número de líneas<input type="number" data-p="lineas" data-t="num" value="8" min="1" max="40"></label>`,
+  eje:'acotado',
+  logica:{
+    pasos:['Lee cuatro listas: cuantificadores, sustantivos, adjetivos y conectores.', 'Construye una proposición con la plantilla cuantificador + sujeto + ES + predicado.', 'Une dos proposiciones con un conector lógico.', 'Repite N veces.'],
+    azar:'Solo elige qué palabra ocupa cada hueco. No puede alterar el orden de los elementos.',
+    regla:'La plantilla sintáctica está escrita en el código y es inviolable: toda salida es una oración bien formada.',
+    material:'Cuatro listas cerradas, ya clasificadas por función gramatical.'
+  },
+  tags:['Estética de la información','Plantilla sintáctica','Meta-escritura'],
+  pregunta:'Lutz no escribe frases: escribe la regla que las produce. Analiza qué se gana y qué se pierde cuando el trabajo poético se traslada al nivel de la meta-escritura, y compara el resultado con la receta dadá, donde no hay gramática alguna.'
+},
+{
+  id:'m4', num:'04', meta:'1961 · Raymond Queneau · Oulipo',
+  titulo:'Cien mil millones de poemas',
+  ficha:`<p>Diez sonetos de catorce versos, impresos en tiras independientes que el lector combina a su gusto. Como todos los versos comparten rima y estructura, cualquier combinación resulta formalmente correcta: diez elevado a catorce, cien billones de sonetos. Leyendo uno por minuto sin interrupción, agotar el libro tomaría alrededor de tres millones de años.</p><p>La contrainte oulipiana opera en sentido inverso al azar dadá: la restricción formal es tan severa que <span class="term">garantiza</span> la corrección de cualquier tirada. El lector pasa de receptor a ejecutante. Las diez series de versos de esta máquina son originales y están escritas en endecasílabos castellanos.</p>`,
+  campos:`<p class="cuenta">Fija una serie para cada verso o déjalo en azar. Combinaciones posibles: 10<sup>14</sup> = 100 000 000 000 000.</p>${sel14}`,
+  eje:'acotado',
+  logica:{
+    pasos:['Para cada uno de los catorce versos elige una de las diez series.', 'Respeta las posiciones que el lector haya fijado.', 'Arma las estrofas en 4-4-3-3.', 'Informa de la combinación obtenida.'],
+    azar:'Elige el número de serie de cada verso, y solo donde el lector no lo ha fijado.',
+    regla:'Las diez variantes de cada posición comparten rima y medida, de modo que cualquier combinación es un soneto correcto.',
+    material:'Ciento cuarenta versos escritos de antemano, con la rima concertada por posición.'
+  },
+  tags:['Contrainte','Literatura potencial','Lector ejecutante'],
+  pregunta:'Queneau publicó un libro que ningún lector podrá terminar. Argumenta si una obra potencial de este tipo se completa en cada lectura, como sostiene Gache sobre la procesualidad de la e-literatura, o si permanece íntegra y no leída en el conjunto de sus combinaciones.',
+  verso:true
+},
+{
+  id:'m5', num:'05', meta:'1962 · Nanni Balestrini · Almanaque Bompiani',
+  titulo:'Tape Mark 1',
+  ficha:`<p>Balestrini programó un IBM 7070 con 322 tarjetas perforadas que establecían alrededor de 1200 instrucciones. La operación combinaba fragmentos extraídos de tres libros de procedencia muy distinta y devolvía un poema formado por ellos. Lo decisivo no es la mezcla sino la regla que la ordena: una restricción impide que dos fragmentos contiguos provengan de la misma fuente.</p><p>Esa restricción convierte la aleatoriedad en <span class="term">montaje</span> y obliga al lector a saltar de registro en cada corte. Cada fragmento aparece marcado con el número de su fuente: <span class="f1">[1]</span> aforismo, <span class="f2">[2]</span> diario de testigo, <span class="f3">[3]</span> prosa teórica.</p>`,
+  campos:`<label class="campo">Fuente 1<textarea data-p="fuentes" data-i="0" data-t="text" rows="4">${FUENTES[0]}</textarea></label>
+  <label class="campo">Fuente 2<textarea data-p="fuentes" data-i="1" data-t="text" rows="4">${FUENTES[1]}</textarea></label>
+  <label class="campo">Fuente 3<textarea data-p="fuentes" data-i="2" data-t="text" rows="4">${FUENTES[2]}</textarea></label>
+  <label class="campo">Fragmentos por verso<input type="number" data-p="porVerso" data-t="num" value="2" min="1" max="6"></label>
+  <label class="check"><input type="checkbox" data-p="restriccion" data-t="bool" checked> Prohibir fragmentos contiguos de la misma fuente</label>`,
+  eje:'acotado',
+  logica:{
+    pasos:['Reúne los fragmentos de las tres fuentes conservando su marca de origen.', 'Elige al azar entre los fragmentos cuya fuente no sea la del anterior.', 'Si no queda ninguno admisible, acepta cualquiera.', 'Agrupa los fragmentos en versos.'],
+    azar:'Elige el fragmento, pero solo dentro del subconjunto que la restricción deja disponible.',
+    regla:'La prohibición de contigüidad obliga a saltar de registro en cada corte y convierte la mezcla en montaje.',
+    material:'Tres corpus de procedencia y tono incompatibles entre sí.'
+  },
+  tags:['Restricción','Montaje de fuentes','Cómputo con tarjetas'],
+  pregunta:'Compara veinte salidas con la restricción activada y veinte sin ella. Formula con precisión qué efecto de lectura produce la regla de no contigüidad y por qué una restricción puede resultar más determinante para el resultado estético que el corpus mismo.'
+},
+{
+  id:'m6', num:'06', meta:'Twitterbot · años diez',
+  titulo:'Two Headlines',
+  ficha:`<p>El bot está programado para publicar a diario el resultado de mezclar dos titulares de prensa en uno solo. El sujeto de una noticia se injerta en el predicado de otra, y la colisión entre dominios incompatibles produce el efecto cómico. El corpus se renueva por su cuenta: el bot escribe sobre un mundo que no deja de cambiar mientras el algoritmo permanece fijo.</p><p>Gache señala que estas composiciones se sitúan en la frontera entre el sentido y el sinsentido, y plantea la pregunta de quién escribe: el robot, el usuario del programa o el algoritmo. Parecen escritas a la vez por todos y por nadie. Los titulares cargados son <span class="term">ficticios</span>; la barra vertical marca el corte entre sujeto y predicado.</p>`,
+  campos:`<label class="campo">Titulares (sujeto | predicado)<textarea data-p="titulares" data-t="text" rows="9">${TITULARES}</textarea></label>
+  <label class="campo">Titulares a generar<input type="number" data-p="cantidad" data-t="num" value="6" min="1" max="30"></label>`,
+  eje:'acotado',
+  logica:{
+    pasos:['Parte cada titular en sujeto y predicado por la barra vertical.', 'Elige dos titulares distintos.', 'Pega el sujeto del primero con el predicado del segundo.', 'Repite.'],
+    azar:'Elige qué dos titulares se cruzan, y nada más.',
+    regla:'El corte entre sujeto y predicado está marcado a mano: eso es lo que hace gramatical cualquier cruce.',
+    material:'Un corpus de titulares que se renueva por su cuenta. El efecto depende de que los dominios no tengan relación.'
+  },
+  tags:['Autoría distribuida','Corpus vivo','Colisión de dominios'],
+  pregunta:'El algoritmo de este bot cabe en diez líneas, y sin embargo su salida depende por completo de un corpus que nadie controla. Discute dónde se localiza la autoría en una pieza cuyo material de entrada lo produce la industria informativa en tiempo real.'
+},
+{
+  id:'m7', num:'07', meta:'Twitterbot · años diez',
+  titulo:'Magic Realism Bot',
+  ficha:`<p>El bot funciona como homenaje a los escritores del realismo mágico: genera publicaciones mezclando frases que remiten a objetos cotidianos con otras pertenecientes al registro fantástico. Por debajo opera una gramática libre de contexto, un conjunto de reglas de reescritura donde cada símbolo entre llaves se sustituye por una de sus opciones, de manera recursiva, hasta que no queda ninguno.</p><p>La máquina trata un género literario como un <span class="term">sistema de reglas combinables</span>. Edita la gramática y observa hasta qué punto el estilo de una tradición puede formalizarse sin que la salida deje de reconocerse como perteneciente a ella.</p>`,
+  campos:`<label class="campo">Gramática (símbolo = opción | opción)<textarea data-p="gramatica" data-t="text" rows="12">${GRAMATICA}</textarea></label>
+  <label class="campo">Enunciados a generar<input type="number" data-p="cantidad" data-t="num" value="6" min="1" max="30"></label>`,
+  eje:'acotado',
+  logica:{
+    pasos:['Lee la gramática: cada símbolo tiene varias opciones.', 'Parte del símbolo inicial.', 'Sustituye cada símbolo entre llaves por una de sus opciones.', 'Repite hasta que no quedan símbolos o se alcanza la profundidad máxima.'],
+    azar:'Elige qué opción toma cada símbolo en cada expansión.',
+    regla:'La gramática define qué puede combinarse con qué. El estilo está codificado en la estructura de las reglas, no en el sorteo.',
+    material:'El repertorio de sujetos, objetos, lugares y revelaciones que escribe quien redacta la gramática.'
+  },
+  tags:['Gramática generativa','Recursión','Género como regla'],
+  pregunta:'Una gramática de este tipo formaliza un estilo mediante un repertorio finito de sustituciones. Evalúa qué aspectos del realismo mágico quedan efectivamente capturados por la regla y cuáles se pierden, y qué dice esa pérdida sobre los límites de la formalización en literatura.'
+},
+{
+  id:'m8', num:'08', sala:2, modo:'svg',
+  meta:'Antigüedad y Edad Media · tecnopaegnias y carmina figurata',
+  titulo:'Texto vertido en una figura',
+  ficha:`<p>Gache recuerda en el cierre del artículo que la separación entre texto, imagen y sonido sufrió en Occidente un proceso de discriminación recién en épocas del Renacimiento. Antes eran frecuentes las manifestaciones en que las distintas dimensiones del signo permanecían unidas: las tecnopaegnias de la Antigüedad, los carmina figurata de la Edad Media.</p><p>Esta máquina reparte las letras de un texto a lo largo de un contorno. El lector ve la figura antes de leer la frase, de modo que el <span class="term">orden de lectura</span> queda determinado por una forma y no por el renglón.</p>`,
+  campos:`<label class="campo">Texto<textarea data-p="texto" data-t="text" rows="4">Las palabras no están sobre la página: la ocupan, la miden, la vuelven cuerpo, y quien lee recorre un contorno antes de entender una frase.</textarea></label>
+  <div class="fila">
+    <label class="campo">Figura<select data-p="figura" data-t="text"><option value="espiral">Espiral</option><option value="circulo">Anillos</option><option value="onda">Onda</option><option value="triangulo">Triángulo</option></select></label>
+    <label class="campo">Tipografía<select data-p="familia" data-t="text"><option value="Spectral, Georgia, serif">Serif</option><option value="JetBrains Mono, monospace">Mono</option></select></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Vueltas<input type="number" data-p="vueltas" data-t="num" value="4" min="1" max="20"></label>
+    <label class="campo">Separación<input type="number" data-p="paso" data-t="num" value="9" min="1" max="40"></label>
+    <label class="campo">Cuerpo<input type="number" data-p="tam" data-t="num" value="19" min="6" max="60"></label>
+  </div>`,
+  eje:'determinista',
+  logica:{
+    pasos:['Separa el texto en caracteres.', 'Calcula un punto del contorno para cada posición.', 'Gira cada letra según la tangente de la curva.', 'Compone el SVG.'],
+    azar:'Ninguno. Con los mismos parámetros, el resultado es idéntico cada vez.',
+    regla:'La ecuación de la figura decide posición y ángulo de cada letra. El orden del texto se conserva íntegro.',
+    material:'El texto, cuya longitud determina cuánto se recorre la figura.'
+  },
+  tags:['Materialidad del signo','Poema visual','Orden de lectura'],
+  pregunta:'Compón el mismo texto en espiral y en triángulo. Determina en qué punto la figura deja de ilustrar al texto y empieza a significar por su cuenta, y relaciona esa frontera con la noción de autonomía sémica que reclamaban los poetas concretos.'
+},
+{
+  id:'m9', num:'09', sala:2, modo:'svg',
+  meta:'1952 · Noigandres, San Pablo · e-concretismo',
+  titulo:'Constelación concreta',
+  ficha:`<p>El concretismo emerge en 1952 en torno a la revista Noigandres. Sus poetas querían deconstruir los géneros poéticos tradicionales partiendo de los elementos constitutivos del lenguaje, las letras y los sonidos, usados de maneras nuevas. La poesía concreta se funda en la materialidad visual de las letras: estructuras, formas, colores, espacios de la página, uso planificado de tipografías y búsqueda de una autonomía sémica.</p><p>Al llevar esa práctica a la pantalla, lo que era una decisión de composición fija pasa a ser un <span class="term">conjunto de parámetros</span>. Cada ejecución distribuye la palabra de nuevo: lo que el poeta concreto fijaba a mano, aquí queda a cargo de una regla.</p>`,
+  campos:`<div class="fila">
+    <label class="campo">Palabra<textarea data-p="palabra" data-t="text" rows="2">signo</textarea></label>
+    <label class="campo">Unidad<select data-p="unidad" data-t="text"><option value="palabra">Palabra entera</option><option value="letras">Letra por letra</option></select></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Disposición<select data-p="disposicion" data-t="text"><option value="dispersion">Dispersión</option><option value="reticula">Retícula</option><option value="columna">Columna</option></select></label>
+    <label class="campo">Tipografía<select data-p="familia" data-t="text"><option value="JetBrains Mono, monospace">Mono</option><option value="Spectral, Georgia, serif">Serif</option></select></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Repeticiones<input type="number" data-p="repeticiones" data-t="num" value="44" min="1" max="400"></label>
+    <label class="campo">Cuerpo mínimo<input type="number" data-p="escalaMin" data-t="num" value="11" min="4" max="200"></label>
+    <label class="campo">Cuerpo máximo<input type="number" data-p="escalaMax" data-t="num" value="58" min="4" max="300"></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Rotación máxima<input type="number" data-p="rotacion" data-t="num" value="25" min="0" max="180"></label>
+    <label class="campo">Dispersión lateral<input type="number" data-p="dispersion" data-t="num" value="30" min="0" max="120"></label>
+  </div>`,
+  eje:'acotado',
+  logica:{
+    pasos:['Toma la palabra entera o la divide en letras.', 'Calcula una posición según la disposición elegida.', 'Sortea cuerpo, giro y opacidad dentro de los límites.', 'Compone el SVG.'],
+    azar:'Decide posición, cuerpo, giro y opacidad de cada repetición.',
+    regla:'La disposición acota dónde puede caer cada pieza; los límites de escala y giro acotan cuánto puede variar.',
+    material:'Una sola palabra, entera o descompuesta en letras.'
+  },
+  tags:['Concretismo','Autonomía sémica','Composición por regla'],
+  pregunta:'Los poetas de Noigandres decidían cada posición. Aquí las decide el azar dentro de unos límites. Argumenta si el resultado sigue siendo poesía concreta o si la sustitución de la decisión por el parámetro cambia la naturaleza de la pieza.'
+},
+{
+  id:'m10', num:'10', sala:2, modo:'canvas', imagen:true,
+  meta:'Procedimiento contemporáneo · imagen y tipografía',
+  titulo:'Tramado tipográfico',
+  ficha:`<p>La imagen se reduce a una retícula y cada celda se sustituye por el signo cuya mancha de tinta corresponde a su luminancia. El resultado se ve como imagen a distancia y se lee como texto de cerca, de manera que el mismo material funciona en los dos registros a la vez.</p><p>Es un ejercicio directo sobre la <span class="term">hibridación semántica</span> de los campos visual y textual que Gache señala entre los rasgos de la e-literatura. Carga tu propia imagen y sustituye la escala de signos por las letras de una palabra para ver qué ocurre cuando el alfabeto hace de trama.</p>`,
+  campos:`<label class="campo">Imagen de origen<input type="file" accept="image/*" data-imagen></label>
+  <label class="campo">Escala de signos (de claro a oscuro)<textarea data-p="signos" data-t="text" rows="2"> .·:-=+*#%@</textarea></label>
+  <div class="fila">
+    <label class="campo">Columnas<input type="number" data-p="columnas" data-t="num" value="90" min="10" max="260"></label>
+    <label class="campo">Alto de celda<input type="number" data-p="relacion" data-t="dec" value="1.9" min="0.8" max="3" step="0.1"></label>
+    <label class="campo">Tipografía<select data-p="familia" data-t="text"><option value="JetBrains Mono, monospace">Mono</option><option value="Spectral, serif">Serif</option></select></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Fondo<input type="color" data-p="fondo" data-t="text" value="#0d0d0f"></label>
+    <label class="campo">Tinta<input type="color" data-p="tinta" data-t="text" value="#e9eaec"></label>
+  </div>
+  <label class="check"><input type="checkbox" data-p="colorDeImagen" data-t="bool"> Tomar el color de la imagen</label>
+  <label class="check"><input type="checkbox" data-p="invertir" data-t="bool"> Invertir luminancia</label>`,
+  eje:'determinista',
+  logica:{
+    pasos:['Reduce la imagen a una retícula de columnas por filas.', 'Mide la luminancia de cada celda.', 'Elige el signo cuya posición en la escala corresponde a esa luminancia.', 'Dibuja el signo en su celda.'],
+    azar:'Ninguno. La imagen determina por completo la salida.',
+    regla:'La escala de signos establece la correspondencia entre densidad de tinta y luminancia. Ahí está toda la semántica del procedimiento.',
+    material:'La imagen de origen y el repertorio de signos que hace de trama.'
+  },
+  tags:['Imagen y texto','Trama','Doble registro de lectura'],
+  pregunta:'A qué distancia deja de verse la imagen y empieza a leerse el texto depende del número de columnas. Determina ese umbral y explica qué dice sobre la relación entre percepción y lectura que una misma superficie no pueda funcionar en los dos modos al mismo tiempo.'
+},
+{
+  id:'m11', num:'11', sala:2, modo:'canvas', imagen:true,
+  meta:'Comienzos de los 2000 · Giselle Beiguelman',
+  titulo:'Alteración de la imagen digital',
+  ficha:`<p>En Code Up Films, Beiguelman parte del film Blow up, de Antonioni, y experimenta con los parámetros que describen la imagen digital: el píxel, la descomposición del color entre el rojo, el verde y el azul, y el sistema de barrido de las pantallas, alterándolos radicalmente.</p><p>Como el fotógrafo de Blow Up, el espectador queda frente a una reflexión sobre el signo y sobre las maneras de significar, con unas <span class="term">evidencias documentales</span> que parecen no dar cuenta de realidad alguna. Mueve los tres canales por separado y observa en qué momento la imagen deja de sostener lo que documentaba.</p>`,
+  campos:`<label class="campo">Imagen de origen<input type="file" accept="image/*" data-imagen></label>
+  <div class="fila">
+    <label class="campo">Tamaño de píxel<input type="number" data-p="pixel" data-t="num" value="3" min="1" max="40"></label>
+    <label class="campo">Umbral (0 = sin umbral)<input type="number" data-p="umbral" data-t="num" value="0" min="0" max="255"></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Canal rojo<input type="number" data-p="rojo" data-t="num" value="6" min="-40" max="40"></label>
+    <label class="campo">Canal verde<input type="number" data-p="verde" data-t="num" value="-4" min="-40" max="40"></label>
+    <label class="campo">Canal azul<input type="number" data-p="azul" data-t="num" value="8" min="-40" max="40"></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Barrido cada<input type="number" data-p="barrido" data-t="num" value="4" min="0" max="40"></label>
+    <label class="campo">Opacidad del barrido<input type="number" data-p="opacidadBarrido" data-t="dec" value="0.35" min="0" max="1" step="0.05"></label>
+  </div>`,
+  eje:'determinista',
+  logica:{
+    pasos:['Reduce la imagen al tamaño de píxel elegido.', 'Desplaza cada canal de color por separado.', 'Aplica el umbral si lo hay.', 'Amplía sin suavizado y superpone el barrido.'],
+    azar:'Ninguno. Cada juego de parámetros produce siempre el mismo resultado.',
+    regla:'Las operaciones son las que describen técnicamente una imagen digital: muestreo, descomposición de color y barrido. Alterarlas es hablar del dispositivo.',
+    material:'La imagen de origen, que es a la vez el documento y lo que se pone en duda.'
+  },
+  tags:['Poesía de códigos','Parámetros de la imagen','Documento y evidencia'],
+  pregunta:'Lleva los tres canales a su desplazamiento máximo y compara el resultado con la imagen original. Sostén una posición sobre si la manipulación revela algo del dispositivo que la imagen normal oculta, o si solo destruye la información que esa imagen portaba.'
+},
+{
+  id:'m12', num:'12', sala:2, modo:'escena',
+  meta:'Mediados de los noventa · Flash · Young-Hae Chang Heavy Industries',
+  titulo:'Poema cinético',
+  ficha:`<p>Flash fue el programa dominante de la e-literatura de la Web 1.0, y sus posibilidades lúdicas e interactivas lo volvieron el preferido para la poesía cinética. Las piezas de Young-Hae Chang Heavy Industries presentan textos en grandes letras sobre fondos de color plano, donde las palabras aparecen en diferentes tamaños y tiempos de exposición y determinan el <span class="term">ritmo de lectura</span> del espectador-lector.</p><p>El lector pierde aquí el control de la velocidad: no puede releer, detenerse ni saltar. Esa pérdida es el procedimiento. El pulso sonoro acompaña la cadencia, como en las piezas del colectivo, que van sincronizadas con música.</p>`,
+  campos:`<label class="campo">Texto<textarea data-p="texto" data-t="text" rows="4">No puedes volver atrás. La palabra ya pasó. Lo que leíste se fue con ella y lo que viene no espera a nadie. Así se lee ahora.</textarea></label>
+  <div class="fila">
+    <label class="campo">Milisegundos por palabra<input type="number" data-p="ms" data-t="num" value="420" min="80" max="3000"></label>
+    <label class="campo">Cuerpo mínimo<input type="number" data-p="tamMin" data-t="num" value="38" min="10" max="200"></label>
+    <label class="campo">Cuerpo máximo<input type="number" data-p="tamMax" data-t="num" value="84" min="10" max="300"></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Acentuar cada<input type="number" data-p="acento" data-t="num" value="4" min="1" max="30"></label>
+    <label class="campo">Color de acento<input type="color" data-p="colorAcento" data-t="text" value="#f0a202"></label>
+  </div>
+  <label class="check"><input type="checkbox" data-p="sonido" data-t="bool" checked> Pulso sonoro</label>`,
+  eje:'acotado',
+  logica:{
+    pasos:['Separa el texto en palabras.', 'Muestra una palabra cada N milisegundos.', 'Sortea su cuerpo dentro de los límites.', 'Acentúa cada k palabras y marca el pulso.'],
+    azar:'Solo el tamaño de cada palabra.',
+    regla:'La duración fija el ritmo de lectura y se la impone al lector. El orden del poema se respeta palabra por palabra.',
+    material:'El texto, en su orden original.'
+  },
+  tags:['Poesía cinética','Tiempo de exposición','Lectura sin control'],
+  pregunta:'Baja la duración a cien milisegundos y luego súbela a dos mil. Describe qué se pierde en cada extremo y argumenta si una pieza que impide releer puede exigir del lector el mismo tipo de atención que un texto impreso.'
+},
+{
+  id:'m13', num:'13', sala:2, modo:'escena',
+  meta:'Joyce, citado en el cierre del artículo',
+  titulo:'Verbovocovisualidad',
+  ficha:`<p>El artículo termina recordando que, tras siglos de separación entre los espacios figural, textual y sonoro, las vanguardias del siglo XX los volvieron a imbricar y los signos recobraron, según Joyce, su verbovocovisualidad. Los nuevos medios llevaron esa anulación de fronteras al extremo: escribir, leer, recitar y escuchar dejan de ser las acciones canónicas basadas en el texto impreso.</p><p>Esta máquina asigna a cada letra un grado de una escala musical y recorre el texto sonándolo mientras lo ilumina. La correspondencia entre letra y tono es una <span class="term">convención del programador</span>, lo cual forma parte del objeto de análisis.</p>`,
+  campos:`<label class="campo">Texto<textarea data-p="texto" data-t="text" rows="3">el signo recobra su verbovocovisualidad</textarea></label>
+  <div class="fila">
+    <label class="campo">Escala<select data-p="escala" data-t="text"><option value="pentatonica">Pentatónica</option><option value="menor">Menor</option><option value="cromatica">Cromática</option></select></label>
+    <label class="campo">Timbre<select data-p="timbre" data-t="text"><option value="sine">Senoidal</option><option value="triangle">Triangular</option><option value="square">Cuadrada</option><option value="sawtooth">Diente de sierra</option></select></label>
+  </div>
+  <div class="fila">
+    <label class="campo">Milisegundos por letra<input type="number" data-p="ms" data-t="num" value="170" min="60" max="1200"></label>
+    <label class="campo">Octava<input type="number" data-p="octava" data-t="num" value="3" min="1" max="6"></label>
+  </div>
+  <label class="check"><input type="checkbox" data-p="bucle" data-t="bool" checked> Repetir en bucle</label>`,
+  eje:'determinista',
+  logica:{
+    pasos:['Separa el texto en letras.', 'Busca la posición de cada letra en el alfabeto.', 'Convierte esa posición en un grado de la escala y en una octava.', 'Suena la nota y enciende la letra.'],
+    azar:'Ninguno. El mismo texto suena siempre igual.',
+    regla:'La correspondencia entre alfabeto y escala es una decisión arbitraria de quien programa, y es justamente lo que la pieza pone a discusión.',
+    material:'El texto. Su ortografía decide la melodía, incluidos los espacios y los signos.'
+  },
+  tags:['Sonido','Verbovocovisualidad','Convención y arbitrariedad'],
+  pregunta:'Suena el mismo texto en escala pentatónica y en cromática. La primera produce algo que se oye como música y la segunda algo que se oye como ruido, con la misma regla de correspondencia. Explica qué aporta y qué encubre esa diferencia respecto de la idea de que el texto tiene una dimensión sonora propia.'
+},
+{
+  id:'m14', num:'14', sala:2, modo:'texto',
+  meta:'Oulipo · contrainte S+7',
+  titulo:'Wordtoy: sustitución S+N',
+  ficha:`<p>La contrainte oulipiana S+7 consiste en sustituir cada sustantivo de un texto por el que aparece siete posiciones más adelante en un diccionario. Es el procedimiento inverso al del azar dadá: la operación resulta enteramente determinista y, sin embargo, el resultado es tan imprevisible como una tirada.</p><p>Aquí el diccionario no viene de fuera: se arma con el <span class="term">léxico del propio corpus</span>, ordenado alfabéticamente. El texto se devora a sí mismo, y el desplazamiento N controla cuánto se aleja cada palabra de la que ocupaba su lugar.</p>`,
+  campos:`<label class="campo">Texto<textarea data-p="texto" data-t="text" rows="5">La máquina no inventa palabras: las toma del mismo texto y las cambia de sitio según una regla que cualquiera puede verificar. El resultado no se parece al original, aunque no haya entrado nada nuevo.</textarea></label>
+  <label class="campo">Léxico (vacío = el propio texto)<textarea data-p="lexico" data-t="text" rows="3"></textarea></label>
+  <div class="fila">
+    <label class="campo">Desplazamiento N<input type="number" data-p="salto" data-t="num" value="7" min="1" max="200"></label>
+    <label class="campo">Longitud mínima<input type="number" data-p="minimo" data-t="num" value="4" min="1" max="12"></label>
+  </div>`,
+  eje:'determinista',
+  logica:{
+    pasos:['Arma el diccionario con las palabras del léxico, sin repetir y en orden alfabético.', 'Busca cada palabra del texto en ese diccionario.', 'La sustituye por la que está N posiciones más adelante.', 'Conserva la mayúscula inicial.'],
+    azar:'Ninguno. La operación es enteramente determinista y cualquiera puede verificarla a mano.',
+    regla:'El orden alfabético hace de mecanismo: la sustitución es ciega al sentido, y por eso el resultado parece azaroso sin serlo.',
+    material:'El léxico, que puede ser el propio texto o uno ajeno que lo invade.'
+  },
+  tags:['Contrainte','Determinismo','Diccionario cerrado'],
+  pregunta:'Pega en el léxico un texto ajeno al que vas a transformar y compara con el resultado anterior. Sostén una posición sobre dónde reside el sentido del texto final: en el original, en el diccionario que lo invade, o en la regla que los pone en contacto.'
+},
+{
+  id:'m15', num:'15', sala:2, modo:'escena',
+  meta:'Wordtoys · libro-juguete',
+  titulo:'Wordtoy: letras fugitivas',
+  ficha:`<p>Los Wordtoys se conciben como un libro-juguete, en una línea que enfatiza la relación entre las reglas lingüísticas y el juego y que va de Lewis Carroll a la net-poesía, con estrategias como el hincapié en la materialidad de los signos, la interactividad, las combinatorias, el azar, las instrucciones y la reescritura.</p><p>Aquí la materialidad se vuelve literal: las letras tienen cuerpo y reaccionan al puntero. El texto puede leerse, pero <span class="term">se resiste</span> a que lo lean, y la frase solo se estabiliza cuando el lector se aparta. Pasa el cursor o el dedo por encima.</p>`,
+  campos:`<label class="campo">Texto<textarea data-p="texto" data-t="text" rows="3">el signo tiene cuerpo</textarea></label>
+  <div class="fila">
+    <label class="campo">Radio de huida<input type="number" data-p="radio" data-t="num" value="120" min="20" max="400"></label>
+    <label class="campo">Fuerza<input type="number" data-p="fuerza" data-t="num" value="70" min="5" max="300"></label>
+    <label class="campo">Elasticidad<input type="number" data-p="elasticidad" data-t="dec" value="0.18" min="0.02" max="1" step="0.02"></label>
+  </div>`,
+  eje:'lector',
+  logica:{
+    pasos:['Convierte el texto en letras independientes.', 'Mide en cada cuadro la distancia de cada letra al puntero.', 'Calcula una fuerza de repulsión que decrece con la distancia.', 'Interpola el desplazamiento hacia esa fuerza.'],
+    azar:'Ninguno. El movimiento lo produce el lector con su propio cursor.',
+    regla:'El radio y la fuerza definen el campo de repulsión; la elasticidad, la memoria del retorno. La frase solo se estabiliza si nadie la toca.',
+    material:'El texto, cuya longitud y espacios determinan cómo se reparten las letras.'
+  },
+  tags:['Wordtoy','Interactividad','Cuerpo del signo'],
+  pregunta:'La pieza convierte la lectura en una negociación física con el texto. Evalúa si esa resistencia agrega algo al sentido de la frase o si funciona como un efecto separable del contenido, y compara tu respuesta con el caso de la poesía cinética, donde el lector tampoco controla la lectura.'
+}
+];
+
+/* ---------------------------------------------------------------
+   Construcción de la interfaz y ejecución.
+--------------------------------------------------------------- */
+const evalOK = (function () {
+  try { return new Function('return 1')() === 1; } catch (e) { return false; }
+})();
+
+const esc = function (s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+};
+
+/* Una sola pieza con movimiento o sonido corre a la vez. */
+const ESCENA = { paradas: [], audio: null };
+const detenerTodo = function () {
+  ESCENA.paradas.splice(0).forEach(function (f) { try { f(); } catch (e) {} });
+};
+const contextoAudio = function () {
+  const A = window.AudioContext || window.webkitAudioContext;
+  if (!A) return null;
+  if (!ESCENA.audio) { try { ESCENA.audio = new A(); } catch (e) { return null; } }
+  if (ESCENA.audio.state === 'suspended') { try { ESCENA.audio.resume(); } catch (e) {} }
+  return ESCENA.audio;
+};
+
+/* Imagen de origen por defecto, dibujada por el propio programa. */
+const imagenPorDefecto = (function () {
+  const c = document.createElement('canvas');
+  c.width = 640; c.height = 440;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 440);
+  g.addColorStop(0, '#08080a'); g.addColorStop(1, '#d6d7db');
+  x.fillStyle = g; x.fillRect(0, 0, 640, 440);
+  const r = x.createRadialGradient(245, 155, 8, 300, 200, 195);
+  r.addColorStop(0, '#ffffff'); r.addColorStop(0.5, '#9aa0ac'); r.addColorStop(1, '#0e0f12');
+  x.fillStyle = r; x.beginPath(); x.arc(300, 200, 168, 0, Math.PI * 2); x.fill();
+  x.globalAlpha = 0.55; x.fillStyle = '#000';
+  for (let y = 300; y < 440; y += 11) x.fillRect(0, y, 640, 4);
+  x.globalAlpha = 1;
+  x.fillStyle = '#f2f2f4'; x.font = 'bold 58px Georgia, serif';
+  x.fillText('signo', 404, 402);
+  return c;
+})();
+
+const fichaLogica = function (L) {
+  const nulo = function (t) { return /^Ninguno\./.test(t) ? ' class="nulo"' : ''; };
+  return '<div class="logica">' +
+    '<div class="pasos"><span class="rotulo">Qué hace el código, paso a paso</span><ol>' +
+      L.pasos.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') +
+    '</ol></div>' +
+    '<div class="tres">' +
+      '<div><span class="rotulo">Dónde actúa el azar</span><p' + nulo(L.azar) + '>' + esc(L.azar) + '</p></div>' +
+      '<div><span class="rotulo">Qué fija la regla</span><p>' + esc(L.regla) + '</p></div>' +
+      '<div><span class="rotulo">Qué aporta el material</span><p>' + esc(L.material) + '</p></div>' +
+    '</div></div>';
+};
+
+const SALAS = {
+  1: { rotulo: 'Sala 1', titulo: 'Máquinas combinatorias',
+       intro: 'Siete procedimientos que operan sobre el orden de las palabras, de la receta dadá a los twitterbots. Todos devuelven texto.' },
+  2: { rotulo: 'Sala 2', titulo: 'Imagen, sonido y figura',
+       intro: 'Ocho piezas donde el signo deja de ser solo verbal: figuras hechas de letras, imagen tramada con tipografía, texto que suena y texto que se resiste a ser leído. Las piezas con movimiento o sonido se ejecutan de una en una.' }
+};
+
+const nav = document.getElementById('nav');
+const cont = document.getElementById('maquinas');
+let salaActual = 0;
+
+MAQUINAS.forEach(function (M) {
+  const sala = M.sala || 1;
+  if (sala !== salaActual) {
+    salaActual = sala;
+    const S = SALAS[sala];
+    const sep = document.createElement('span');
+    sep.className = 'navsala';
+    sep.textContent = S.rotulo;
+    nav.appendChild(sep);
+    const div = document.createElement('section');
+    div.className = 'sala';
+    div.id = 'sala' + sala;
+    div.innerHTML = '<p class="lab">' + esc(S.rotulo) + '</p><h2>' + esc(S.titulo) +
+      '</h2><p class="intro">' + esc(S.intro) + '</p>';
+    cont.appendChild(div);
+  }
+
+  const a = document.createElement('a');
+  a.href = '#' + M.id;
+  a.innerHTML = '<b>' + M.num + '</b> ' + esc(M.titulo);
+  nav.appendChild(a);
+
+  const modo = M.modo || 'texto';
+  const visual = modo !== 'texto';
+  const codigo = (document.getElementById('cod-' + M.id).textContent || '').trim();
+
+  const sec = document.createElement('section');
+  sec.className = 'maq';
+  sec.id = M.id;
+  sec.innerHTML =
+    '<div class="mh"><div class="num">' + M.num + '</div><div>' +
+      '<p class="meta">' + esc(M.meta) + '</p><h2>' + esc(M.titulo) + '</h2></div></div>' +
+    '<div class="ficha">' + M.ficha + '</div>' +
+    (M.logica ? fichaLogica(M.logica) : '') +
+    '<div class="banco">' +
+      '<div class="panel"><div class="ptit"><span>Corpus y parámetros</span></div>' +
+        '<div class="pbody">' + M.campos + '</div></div>' +
+      '<div class="panel cod"><div class="ptit"><span>Algoritmo' +
+        (evalOK ? ' · editable' : ' · solo lectura') + '</span>' +
+        '<button class="ghost" data-accion="restaurar">Restaurar</button></div>' +
+        '<div class="pbody"><textarea data-codigo spellcheck="false"' +
+        (evalOK ? '' : ' readonly') + '>' + esc(codigo) + '</textarea>' +
+        (evalOK ? '' : '<p class="aviso">Este navegador no permite compilar código en la página. La máquina funciona con su versión original.</p>') +
+        '<p class="aviso" data-error hidden></p></div></div>' +
+    '</div>' +
+    '<div class="fila"><button data-accion="ejecutar">Ejecutar</button>' +
+      (modo === 'escena' ? '<button class="ghost" data-accion="detener">Detener</button>' : '') +
+      (visual && modo !== 'svg' ? '' : '<button class="ghost" data-accion="copiar">Copiar salida</button>') +
+    '</div>' +
+    '<div class="salida"><div class="ptit"><span>Salida</span><span class="cuenta" data-tirada>tirada 0</span></div>' +
+      (visual
+        ? '<div class="lienzo" data-lienzo></div>'
+        : '<pre' + (M.verso ? ' class="verso"' : '') + ' data-salida></pre>') +
+    '</div>' +
+    '<div class="pie"><div class="tags">' +
+      M.tags.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('') +
+      '</div><p class="preg"><b>Análisis</b>' + esc(M.pregunta) + '</p></div>';
+  cont.appendChild(sec);
+
+  const ta = sec.querySelector('[data-codigo]');
+  const pre = sec.querySelector('[data-salida]');
+  const lienzo = sec.querySelector('[data-lienzo]');
+  const err = sec.querySelector('[data-error]');
+  const marcador = sec.querySelector('[data-tirada]');
+  let tiradas = 0;
+  let fuente = imagenPorDefecto;
+
+  const entrada = sec.querySelector('[data-imagen]');
+  if (entrada) {
+    entrada.addEventListener('change', function () {
+      const f = entrada.files && entrada.files[0];
+      if (!f) return;
+      const lector = new FileReader();
+      lector.onload = function () {
+        const im = new Image();
+        im.onload = function () {
+          const c = document.createElement('canvas');
+          const k = Math.min(1, 1400 / im.width);
+          c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+          c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          fuente = c;
+          ejecutar();
+        };
+        im.onerror = function () {
+          err.textContent = 'No se pudo leer esa imagen.'; err.hidden = false;
+        };
+        im.src = lector.result;
+      };
+      lector.readAsDataURL(f);
+    });
+  }
+
+  const leerParametros = function () {
+    const P = {};
+    sec.querySelectorAll('[data-p]').forEach(function (el) {
+      const k = el.getAttribute('data-p');
+      const t = el.getAttribute('data-t');
+      const i = el.getAttribute('data-i');
+      let v;
+      if (t === 'num' || t === 'dec') {
+        let x = parseFloat(el.value);
+        if (isNaN(x)) x = parseFloat(el.getAttribute('min') || '0') || 0;
+        if (el.hasAttribute('min')) x = Math.max(parseFloat(el.getAttribute('min')), x);
+        if (el.hasAttribute('max')) x = Math.min(parseFloat(el.getAttribute('max')), x);
+        v = t === 'num' ? Math.round(x) : x;
+      } else if (t === 'bool') v = el.checked;
+      else v = el.value;
+      if (i !== null) { if (!P[k]) P[k] = []; P[k][parseInt(i, 10)] = v; }
+      else P[k] = v;
+    });
+    if (M.id === 'm4') {
+      P.versos = VERSOS;
+      P.fijos = [];
+      sec.querySelectorAll('[data-fijo]').forEach(function (s) {
+        P.fijos[parseInt(s.getAttribute('data-fijo'), 10)] =
+          s.value === '' ? null : parseInt(s.value, 10);
+      });
+    }
+    return P;
+  };
+
+  const pintar = function (texto) {
+    if (M.id === 'm5') {
+      pre.innerHTML = esc(texto)
+        .replace(/\[1\]/g, '<span class="f1">[1]</span>')
+        .replace(/\[2\]/g, '<span class="f2">[2]</span>')
+        .replace(/\[3\]/g, '<span class="f3">[3]</span>');
+    } else {
+      pre.textContent = texto;
+    }
+  };
+
+  const construirApi = function (reposo) {
+    const api = {
+      lienzo: lienzo,
+      reposo: !!reposo,
+      fuente: function () { return fuente; },
+      medir: function (w, h) {
+        if (!api.canvas) {
+          api.canvas = document.createElement('canvas');
+          lienzo.innerHTML = '';
+          lienzo.appendChild(api.canvas);
+        }
+        api.canvas.width = Math.max(1, Math.round(w));
+        api.canvas.height = Math.max(1, Math.round(h));
+        api.ctx = api.canvas.getContext('2d');
+        return api.ctx;
+      },
+      intervalo: function (fn, ms) {
+        const id = setInterval(fn, Math.max(40, ms));
+        ESCENA.paradas.push(function () { clearInterval(id); });
+        return id;
+      },
+      cuadro: function (fn) {
+        let id = 0, vivo = true;
+        const paso = function () { if (!vivo) return; fn(); id = requestAnimationFrame(paso); };
+        id = requestAnimationFrame(paso);
+        ESCENA.paradas.push(function () { vivo = false; cancelAnimationFrame(id); });
+      },
+      alSalir: function (fn) { ESCENA.paradas.push(fn); },
+      tono: function (hz, dur, tipo) {
+        const ac = contextoAudio();
+        if (!ac || !isFinite(hz) || hz <= 0) return;
+        const o = ac.createOscillator(), g = ac.createGain();
+        const t0 = ac.currentTime, d = Math.max(0.05, dur || 0.12);
+        o.type = tipo || 'sine';
+        o.frequency.value = Math.min(8000, hz);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.2, t0 + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+        o.connect(g); g.connect(ac.destination);
+        o.start(t0); o.stop(t0 + d + 0.03);
+        ESCENA.paradas.push(function () { try { o.stop(); } catch (e) {} });
+      }
+    };
+    if (modo === 'canvas') api.medir(900, 600);
+    return api;
+  };
+
+  const ejecutar = function (reposo) {
+    err.hidden = true;
+    if (modo === 'escena' || modo === 'canvas') detenerTodo();
+    let fn = NATIVA[M.id];
+    if (evalOK) {
+      try {
+        fn = new Function('return (' + ta.value + ');')();
+        if (typeof fn !== 'function') throw new Error('El código debe definir una función generar.');
+      } catch (e) {
+        err.textContent = 'Error de compilación: ' + e.message + ' — se ejecuta la versión original.';
+        err.hidden = false;
+        fn = NATIVA[M.id];
+      }
+    }
+    try {
+      const P = leerParametros();
+      if (modo === 'texto') {
+        pintar(String(fn(P)));
+      } else if (modo === 'svg') {
+        lienzo.innerHTML = String(fn(P));
+      } else {
+        fn(P, construirApi(reposo));
+      }
+      tiradas++;
+      marcador.textContent = reposo ? 'en reposo' : 'tirada ' + tiradas;
+    } catch (e) {
+      err.textContent = 'Error en ejecución: ' + e.message;
+      err.hidden = false;
+    }
+  };
+
+  sec.querySelector('[data-accion="ejecutar"]').addEventListener('click', function () { ejecutar(false); });
+  const botonDetener = sec.querySelector('[data-accion="detener"]');
+  if (botonDetener) botonDetener.addEventListener('click', function () { detenerTodo(); });
+  sec.querySelector('[data-accion="restaurar"]').addEventListener('click', function () {
+    ta.value = codigo; err.hidden = true; ejecutar(modo === 'escena');
+  });
+
+  const botonCopiar = sec.querySelector('[data-accion="copiar"]');
+  if (botonCopiar) botonCopiar.addEventListener('click', function (ev) {
+    const b = ev.currentTarget, antes = b.textContent;
+    const texto = modo === 'svg' ? lienzo.innerHTML : pre.textContent;
+    const fallback = function () {
+      if (!pre) { b.textContent = 'No disponible'; setTimeout(function () { b.textContent = antes; }, 1800); return; }
+      const r = document.createRange(); r.selectNodeContents(pre);
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      b.textContent = 'Selecciona y copia';
+      setTimeout(function () { b.textContent = antes; }, 2200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function () {
+        b.textContent = 'Copiado';
+        setTimeout(function () { b.textContent = antes; }, 1600);
+      }, fallback);
+    } else fallback();
+  });
+
+  ejecutar(modo === 'escena');
+});
+
+/* Cuadro comparativo: azar simple frente a semántica programada. */
+(function cuadroComparativo() {
+  const EJES = [
+    { id:'sin-regla', titulo:'Azar sin regla',
+      def:'El sorteo decide el resultado entero. Ninguna estructura filtra lo que puede salir, de modo que la salida es legible solo por accidente.' },
+    { id:'acotado', titulo:'Azar acotado por una regla',
+      def:'El sorteo elige, pero dentro de un repertorio o de una estructura que el programador escribió. La regla garantiza la forma; el azar provee la variación.' },
+    { id:'determinista', titulo:'Sin azar',
+      def:'El mismo material y los mismos parámetros dan siempre el mismo resultado. Lo imprevisible del texto viene de la regla, no del sorteo.' },
+    { id:'lector', titulo:'Dirigido por el lector',
+      def:'Ni sorteo ni regla fija deciden la salida: la produce quien lee, en el momento de leer.' }
+  ];
+  const sec = document.createElement('section');
+  sec.className = 'cuadro';
+  sec.id = 'cuadro';
+  let html = '<p class="lab">Cuadro comparativo</p><h2>Azar simple y semántica programada</h2>' +
+    '<p class="intro" style="max-width:72ch;color:var(--muted)">Las quince piezas repartidas según qué decide realmente el resultado. ' +
+    'La columna de la izquierda de cada ficha, arriba, dice lo mismo máquina por máquina.</p>';
+  EJES.forEach(function (E) {
+    const suyas = MAQUINAS.filter(function (M) { return M.eje === E.id; });
+    if (!suyas.length) return;
+    html += '<div class="grupo"><div><h3>' + esc(E.titulo) + '</h3><p class="def">' + esc(E.def) + '</p></div><ul>' +
+      suyas.map(function (M) {
+        return '<li><b>' + M.num + '</b><span>' + esc(M.titulo) + ' · <i>' + esc(M.logica.azar) + '</i></span></li>';
+      }).join('') + '</ul></div>';
+  });
+  sec.innerHTML = html;
+  cont.appendChild(sec);
+  const a = document.createElement('a');
+  a.href = '#cuadro';
+  a.innerHTML = '<b>··</b> Cuadro comparativo';
+  nav.appendChild(a);
+})();
+</script>
+
+</body></html>
