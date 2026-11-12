@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitácora de obra · generador de realismo mágico</title>
+<style>
+  :root{
+    --papel:#f6f1e7; --tarjeta:#fffdf8; --tinta:#1f1b16; --suave:#6b6257;
+    --acento:#8a3b12; --acento-t:#fff; --borde:#d9cfbd; --error:#a3200f; --ok:#2f6b3a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --papel:#1b1814; --tarjeta:#24201b; --tinta:#efe8da; --suave:#a79d8d;
+      --acento:#e0905a; --acento-t:#1b1814; --borde:#3a342c; --error:#ff8a78; --ok:#8fd19b; }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--papel);color:var(--tinta);
+    font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+  main{max-width:720px;margin:0 auto;padding:20px 16px}
+  h1{font:700 1.5rem/1.2 Georgia,"Times New Roman",serif;margin:0 0 6px}
+  h2{font:700 1.05rem/1.3 system-ui,sans-serif;margin:28px 0 10px;letter-spacing:.02em}
+  .sub{color:var(--suave);margin:0 0 4px}
+  .card{display:block;width:100%;text-align:left;background:var(--tarjeta);color:var(--tinta);
+    border:1px solid var(--borde);border-radius:12px;padding:14px 16px;margin:0 0 10px;
+    font:1.08rem/1.55 Georgia,"Times New Roman",serif;cursor:pointer}
+  .card:active{border-color:var(--acento)}
+  .pista{color:var(--suave);font-size:.9rem;margin:2px 0 0}
+  details{background:var(--tarjeta);border:1px solid var(--borde);border-radius:12px;padding:10px 14px;margin:0 0 12px}
+  summary{cursor:pointer;font-weight:600}
+  details ul{padding-left:20px;margin:8px 0 4px}
+  details li{margin:6px 0}
+  code{font:.92em ui-monospace,Menlo,Consolas,monospace;background:rgba(138,59,18,.1);padding:1px 5px;border-radius:5px}
+  textarea{width:100%;min-height:340px;resize:vertical;background:var(--tarjeta);color:var(--tinta);
+    border:1px solid var(--borde);border-radius:12px;padding:12px;
+    font:16px/1.5 ui-monospace,Menlo,Consolas,monospace}
+  textarea:focus{outline:2px solid var(--acento);outline-offset:1px}
+  #chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+  .chip{font-size:.85rem;border:1px solid var(--borde);background:var(--tarjeta);border-radius:999px;padding:3px 10px}
+  .chip.falta{border-color:var(--error);color:var(--error)}
+  .chip.origen{border-color:var(--acento);font-weight:600}
+  #avisos p{margin:4px 0;color:var(--error);font-size:.95rem}
+  .fila{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  button.sec{background:var(--tarjeta);color:var(--tinta);border:1px solid var(--borde);
+    border-radius:10px;padding:10px 14px;font:inherit;font-size:.95rem;cursor:pointer}
+  button.sec:active{border-color:var(--acento)}
+  pre{white-space:pre-wrap;word-break:break-word;background:var(--tarjeta);border:1px solid var(--borde);
+    border-radius:12px;padding:12px;font:.85rem/1.45 ui-monospace,Menlo,Consolas,monospace;max-height:320px;overflow:auto}
+  .barra{position:fixed;left:0;right:0;bottom:0;background:var(--papel);border-top:1px solid var(--borde);
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+  .barra button{display:block;width:100%;max-width:720px;margin:0 auto;background:var(--acento);color:var(--acento-t);
+    border:0;border-radius:12px;padding:14px;font:700 1.05rem system-ui,sans-serif;cursor:pointer}
+  #toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    background:var(--tinta);color:var(--papel);padding:8px 14px;border-radius:999px;font-size:.9rem;
+    opacity:0;pointer-events:none;transition:opacity .2s}
+  #toast.on{opacity:1}
+  footer{color:var(--suave);font-size:.85rem;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Bitácora de obra</h1>
+    <p class="sub">Generador de realismo mágico de ingeniería. Escribe listas de frases, el programa las combina y cuenta lo imposible con voz de informe técnico.</p>
+  </header>
+
+  <section>
+    <h2>Resultados</h2>
+    <div id="resultados" aria-live="polite"></div>
+    <p class="pista">Toca un texto para copiarlo. El botón de abajo genera otros.</p>
+  </section>
+
+  <section>
+    <h2>Gramática</h2>
+    <details>
+      <summary>Cómo se escribe</summary>
+      <ul>
+        <li>Cada lista se llama <b>símbolo</b>. Escribe su nombre con dos puntos, y debajo una opción por línea. Una línea en blanco cierra el símbolo.</li>
+        <li>Atajo en una sola línea: <code>lugar: En el túnel | En la presa</code></li>
+        <li>Para usar un símbolo dentro de otro, escríbelo entre almohadillas: <code>#oficio#</code></li>
+        <li>Mayúscula inicial: <code>#reaccion.mayus#</code>. Minúscula inicial: <code>#prodigio.minus#</code></li>
+        <li>Número al azar dentro de un texto: <code>{1-99}</code></li>
+        <li>El símbolo <code>origen</code> es la plantilla de arranque. Puede tener varias líneas y el programa elige una al azar.</li>
+        <li>Una línea que empieza con <code>//</code> es un comentario.</li>
+        <li>En equipo: cada equipo escribe su símbolo y lo manda al grupo. Una persona pega todos los bloques aquí y comparte el enlace.</li>
+      </ul>
+    </details>
+
+    <textarea id="gram" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Gramática"></textarea>
+    <div id="chips" aria-label="Símbolos definidos"></div>
+    <div id="avisos"></div>
+
+    <div class="fila">
+      <button class="sec" id="compartir">Compartir enlace</button>
+      <button class="sec" id="copiar-g">Copiar gramática</button>
+      <button class="sec" id="json">Copiar JSON de Tracery</button>
+      <button class="sec" id="reset">Volver al ejemplo</button>
+    </div>
+    <pre id="json-out" hidden></pre>
+  </section>
+
+  <footer>Funciona sin conexión una vez cargada. Compatible con el formato de <a href="https://tracery.io" style="color:inherit">Tracery</a>, de Kate Compton.</footer>
+</main>
+
+<div class="barra"><button id="gen">Generar</button></div>
+<div id="toast" role="status"></div>
+
+<script>
+/* ===== Motor (compatible con la sintaxis de Tracery, sin dependencias) ===== */
+var EJEMPLO = [
+"// Bitácora de obra: ejemplo de realismo mágico de ingeniería",
+"// Cada bloque es un símbolo. Edita, agrega o borra opciones.",
+"",
+"origen:",
+"#lugar#, #oficio# #tarea#. #prodigio#, y #reaccion#. #dato#",
+"#lugar#, #oficio# #tarea#. #prodigio#. #reaccion.mayus#. #dato#",
+"#lugar#, #oficio# #tarea#, cuando #prodigio.minus#. #reaccion.mayus#. #dato#",
+"",
+"lugar:",
+"En el kilómetro {3-48} del túnel",
+"Sobre el puente, a las {2-6} de la tarde",
+"En la obra de la presa, un martes de lluvia",
+"En el sótano de la Facultad de Ingeniería",
+"A la orilla del canal, antes del colado",
+"En la plataforma {2-9} de la refinería",
+"Bajo el viaducto, durante el turno de la madrugada",
+"En el cuarto de máquinas, con el tablero apagado",
+"",
+"oficio:",
+"el residente de obra",
+"la topógrafa",
+"el calculista",
+"el ingeniero de guardia",
+"la inspectora de calidad",
+"el maestro de obras",
+"la becaria de laboratorio",
+"",
+"tarea:",
+"revisaba los planos por tercera vez",
+"calibraba el nivel",
+"medía la deflexión de una viga",
+"anotaba las lecturas en la bitácora",
+"esperaba el resultado del laboratorio",
+"tomaba muestras del concreto",
+"verificaba el torque de los tornillos",
+"",
+"prodigio:",
+"El río empezó a correr hacia la montaña",
+"Las varillas echaron flores amarillas",
+"La viga se inclinó hacia el oriente, como quien saluda",
+"Del concreto fresco brotaron mariposas de ceniza",
+"Los planos se llenaron de nombres de gente que aún no había nacido",
+"La burbuja del nivel subió al cielo y no volvió",
+"Llovió durante cuatro minutos solo dentro de la caseta",
+"El eco del túnel contestó con la voz de un obrero que ya no trabajaba ahí",
+"Los sismógrafos registraron un temblor que solo sintieron las gallinas del campamento",
+"La sombra de la grúa llegó una hora antes que la grúa",
+"",
+"reaccion:",
+"nadie lo comentó en la comida",
+"quedó asentado en la bitácora como incidencia menor",
+"el supervisor pidió repetir la medición",
+"los obreros siguieron colando, porque el turno no había terminado",
+"se archivó junto con las facturas del cemento",
+"el sindicato pidió que se reconociera como riesgo de trabajo",
+"se resolvió con una circular",
+"",
+"dato:",
+"Margen de error: 0.{1-9} mm.",
+"Se reportó como falla menor, folio {100-999}.",
+"Cargas dentro de norma.",
+"Temperatura ambiente: {18-31} grados; humedad relativa: {40-90} por ciento.",
+"Sin afectaciones estructurales.",
+"Costo del imprevisto: {2-80} mil pesos.",
+"Resistencia del concreto a los 28 días: {200-350} kg/cm².",
+"Se solicitaron {5-60} metros de cable adicional."
+].join("\n");
+
+var RE_SIMBOLO = /#([\p{L}\p{N}_]+)((?:\.[\p{L}]+)*)#/gu;
+var RE_RANGO = /\{(\d+)\s*[-–]\s*(\d+)\}/g;
+
+var MODS = {
+  mayus: function(s){ return s.charAt(0).toUpperCase() + s.slice(1); },
+  capitalize: function(s){ return s.charAt(0).toUpperCase() + s.slice(1); },
+  minus: function(s){ return s.charAt(0).toLowerCase() + s.slice(1); },
+  versales: function(s){ return s.toUpperCase(); }
+};
+
+function parseGrammar(text){
+  var g = {}, errors = [], cur = null;
+  text.split(/\r?\n/).forEach(function(raw, i){
+    var line = raw.trim();
+    if (line.slice(0,2) === "//") return;
+    if (!line){ cur = null; return; }
+    if (cur){ g[cur].push(line); return; }
+    var m = line.match(/^([\p{L}\p{N}_]+)\s*:\s*(.*)$/u);
+    if (!m){
+      var corto = line.length > 40 ? line.slice(0,40) + "…" : line;
+      errors.push("Línea " + (i+1) + ": «" + corto + "» está fuera de un símbolo. Escribe antes un nombre con dos puntos y deja una línea en blanco entre símbolos.");
+      return;
+    }
+    var name = m[1], rest = m[2];
+    if (!g[name]) g[name] = [];
+    if (rest === "") cur = name;
+    else rest.split("|").map(function(s){ return s.trim(); }).filter(Boolean)
+      .forEach(function(o){ g[name].push(o); });
+  });
+  Object.keys(g).forEach(function(k){
+    if (!g[k].length){ errors.push("El símbolo «" + k + "» no tiene opciones."); delete g[k]; }
+  });
+  return { grammar: g, errors: errors };
+}
+
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function expand(text, g, depth){
+  depth = depth || 0;
+  if (depth > 25) return text;
+  var out = text.replace(RE_SIMBOLO, function(m, name, mods){
+    if (!g[name]) return "«" + name + "?»";
+    var s = expand(pick(g[name]), g, depth + 1);
+    mods.split(".").filter(Boolean).forEach(function(mod){ if (MODS[mod]) s = MODS[mod](s); });
+    return s;
+  });
+  return out.replace(RE_RANGO, function(m, a, b){
+    a = +a; b = +b;
+    if (b < a){ var t = a; a = b; b = t; }
+    return String(a + Math.floor(Math.random() * (b - a + 1)));
+  });
+}
+
+function startSymbol(g){ return g.origen ? "origen" : (g.origin ? "origin" : null); }
+
+function generate(g, n){
+  var start = startSymbol(g);
+  if (!start) return [];
+  var res = [], seen = {}, tries = 0;
+  while (res.length < n && tries < n * 6){
+    tries++;
+    var s = expand("#" + start + "#", g);
+    if (!seen[s]){ seen[s] = 1; res.push(s); }
+  }
+  return res;
+}
+
+function undefinedSymbols(g){
+  var falta = {};
+  Object.keys(g).forEach(function(k){
+    g[k].forEach(function(opt){
+      var m, re = new RegExp(RE_SIMBOLO.source, "gu");
+      while ((m = re.exec(opt))){ if (!g[m[1]]) falta[m[1]] = 1; }
+    });
+  });
+  return Object.keys(falta);
+}
+
+function sanName(n){
+  if (n === "origen") return "origin";
+  return n.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9_]/g, "_");
+}
+
+/* Tracery no tiene modificador de minúscula inicial ni rangos numéricos.
+   Al exportar, ambos se convierten en símbolos auxiliares equivalentes. */
+function toTracery(g){
+  var out = {}, rangos = {}, minus = {};
+  function conv(s){
+    return s.replace(RE_RANGO, function(m, a, b){
+      a = +a; b = +b;
+      if (b < a){ var t = a; a = b; b = t; }
+      if (b - a > 2000) return m;
+      var k = "n" + a + "a" + b;
+      var lista = []; for (var i = a; i <= b; i++) lista.push(String(i));
+      rangos[k] = lista;
+      return "#" + k + "#";
+    }).replace(RE_SIMBOLO, function(m, n, mods){
+      var ms = mods.split(".").filter(Boolean), nombre = rangos[n] ? n : sanName(n), sufijo = "";
+      ms.forEach(function(x){
+        if (x === "minus"){ minus[nombre] = 1; nombre = nombre + "_minus"; }
+        else if (x === "mayus" || x === "capitalize") sufijo += ".capitalize";
+      });
+      return "#" + nombre + sufijo + "#";
+    });
+  }
+  Object.keys(g).forEach(function(k){ out[sanName(k)] = g[k].map(conv); });
+  Object.keys(rangos).forEach(function(k){ out[k] = rangos[k]; });
+  Object.keys(minus).forEach(function(k){
+    if (!out[k]) return;
+    out[k + "_minus"] = out[k].map(function(o){
+      return /^\p{Lu}/u.test(o) ? o.charAt(0).toLowerCase() + o.slice(1) : o;
+    });
+  });
+  return out;
+}
+
+function b64enc(t){
+  var bytes = new TextEncoder().encode(t), s = "";
+  bytes.forEach(function(x){ s += String.fromCharCode(x); });
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function b64dec(s){
+  s = s.replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  var bin = atob(s), bytes = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+/* ===== Interfaz ===== */
+if (typeof document !== "undefined") (function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var area = $("gram"), res = $("resultados"), chips = $("chips"), avisos = $("avisos");
+  var KEY = "bitacora-obra-gramatica";
+  var tToast, tInput, tReset;
+
+  function toast(msg){
+    var t = $("toast"); t.textContent = msg; t.classList.add("on");
+    clearTimeout(tToast); tToast = setTimeout(function(){ t.classList.remove("on"); }, 1600);
+  }
+  function copiar(texto, msg){
+    var fin = function(){ toast(msg || "Copiado"); };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texto).then(fin, function(){ viejo(texto); fin(); });
+    } else { viejo(texto); fin(); }
+  }
+  function viejo(texto){
+    var ta = document.createElement("textarea");
+    ta.value = texto; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  function estado(){ return parseGrammar(area.value); }
+
+  function pintarChips(p){
+    var g = p.grammar; chips.innerHTML = "";
+    Object.keys(g).forEach(function(k){
+      var c = document.createElement("span");
+      c.className = "chip" + ((k === "origen" || k === "origin") ? " origen" : "");
+      c.textContent = k + " · " + g[k].length;
+      chips.appendChild(c);
+    });
+    undefinedSymbols(g).forEach(function(k){
+      var c = document.createElement("span");
+      c.className = "chip falta"; c.textContent = k + " · falta definir";
+      chips.appendChild(c);
+    });
+  }
+  function pintarAvisos(p){
+    avisos.innerHTML = "";
+    var lista = p.errors.slice();
+    if (!startSymbol(p.grammar)) lista.push("Falta el símbolo «origen», que es la plantilla de arranque.");
+    lista.forEach(function(e){
+      var el = document.createElement("p"); el.textContent = e; avisos.appendChild(el);
+    });
+  }
+  function pintarResultados(p){
+    res.innerHTML = "";
+    var textos = generate(p.grammar, 6);
+    if (!textos.length){
+      var v = document.createElement("p"); v.className = "pista";
+      v.textContent = "Todavía no hay resultados. Revisa los avisos debajo de la gramática.";
+      res.appendChild(v); return;
+    }
+    textos.forEach(function(t){
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "card"; b.textContent = t;
+      b.addEventListener("click", function(){ copiar(t, "Texto copiado"); });
+      res.appendChild(b);
+    });
+  }
+  function refrescar(soloResultados){
+    var p = estado();
+    if (!soloResultados){ pintarChips(p); pintarAvisos(p); }
+    pintarResultados(p);
+  }
+
+  area.addEventListener("input", function(){
+    try { localStorage.setItem(KEY, area.value); } catch(e){}
+    clearTimeout(tInput); tInput = setTimeout(function(){ refrescar(false); }, 350);
+  });
+
+  $("gen").addEventListener("click", function(){
+    refrescar(true);
+    res.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  $("compartir").addEventListener("click", function(){
+    var url = location.href.split("#")[0] + "#g=" + b64enc(area.value);
+    if (navigator.share){
+      navigator.share({ title: "Bitácora de obra", url: url }).catch(function(){});
+    } else { copiar(url, "Enlace copiado"); }
+  });
+  $("copiar-g").addEventListener("click", function(){ copiar(area.value, "Gramática copiada"); });
+  $("json").addEventListener("click", function(){
+    var p = estado();
+    if (!startSymbol(p.grammar)){ toast("Falta el símbolo origen"); return; }
+    var txt = JSON.stringify(toTracery(p.grammar), null, 2);
+    var out = $("json-out"); out.textContent = txt; out.hidden = false;
+    copiar(txt, "JSON copiado");
+  });
+  $("reset").addEventListener("click", function(){
+    var b = $("reset");
+    if (b.dataset.seguro){
+      clearTimeout(tReset); delete b.dataset.seguro; b.textContent = "Volver al ejemplo";
+      area.value = EJEMPLO;
+      try { localStorage.setItem(KEY, area.value); } catch(e){}
+      refrescar(false); toast("Ejemplo restaurado");
+    } else {
+      b.dataset.seguro = "1"; b.textContent = "¿Seguro? Toca otra vez";
+      tReset = setTimeout(function(){ delete b.dataset.seguro; b.textContent = "Volver al ejemplo"; }, 3000);
+    }
+  });
+
+  /* Carga inicial: enlace compartido > guardado local > ejemplo */
+  var inicial = EJEMPLO;
+  try { var gu = localStorage.getItem(KEY); if (gu) inicial = gu; } catch(e){}
+  if (location.hash.indexOf("#g=") === 0){
+    try { inicial = b64dec(location.hash.slice(3)); } catch(e){ toast("El enlace no se pudo leer"); }
+  }
+  area.value = inicial;
+  refrescar(false);
+})();
+</script>
+</body>
+</html>
